@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Sarajevo, 1914 — Investigação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main id="app">
+      <section id="intro" class="screen">
+        <p class="eyebrow">28 de junho de 1914 · Sarajevo · pouco antes das 11h</p>
+        <h1>O tempo parou.</h1>
+        <p>
+          Você é uma pessoa investigadora vinda do futuro. Acabou de congelar o tempo numa rua de Sarajevo, logo
+          depois dos tiros contra o arquiduque Franz Ferdinand e Sophie Chotek. Ninguém se mexe — mas você pode
+          caminhar entre as pessoas e conversar com elas.
+        </p>
+        <p>
+          Sua missão é pensar como historiador: comparar versões, desconfiar de boatos e achar contradições. Você só
+          observa; não pode mudar a história.
+        </p>
+        <aside class="notice">
+          <strong>Licença ficcional.</strong> Na vida real, ninguém ali estaria calmo para conversar. A calma dos
+          personagens é invenção do jogo. As falas são escritas pelo projeto, inspiradas em fontes históricas, que
+          aparecem embaixo de cada resposta.
+        </aside>
+        <form id="access-form" autocomplete="off">
+          <label for="access-code">Código de acesso</label>
+          <div class="row">
+            <input id="access-code" name="access-code" type="password" required placeholder="Peça ao seu professor" />
+            <button type="submit">Entrar na cena</button>
+          </div>
+          <p id="access-error" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section id="cast" class="screen" hidden>
+        <h2>Com quem você quer falar?</h2>
+        <p class="hint">Cada pessoa só sabe o que viveu. O que uma contar, a outra não ouviu.</p>
+        <ul id="character-list" class="cards"></ul>
+      </section>
+
+      <section id="chat" class="screen" hidden>
+        <header class="chat-header">
+          <button id="back" type="button" class="ghost" aria-label="Voltar para a lista">← Voltar</button>
+          <div>
+            <h2 id="chat-name"></h2>
+            <p id="chat-description" class="hint"></p>
+          </div>
+        </header>
+        <ol id="messages" class="messages" aria-live="polite"></ol>
+        <p id="chat-error" class="error" role="alert" hidden></p>
+        <form id="ask-form" class="ask" autocomplete="off">
+          <textarea id="question" rows="2" maxlength="1000" required placeholder="Faça sua pergunta…"></textarea>
+          <button id="send" type="submit">Perguntar</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

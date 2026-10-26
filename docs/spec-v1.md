@@ -5,7 +5,7 @@ labels: [ready-for-agent]
 
 ## Problem Statement
 
-High-school students (15–17) learn the causes of World War I as a fixed story to memorize. They rarely practice thinking like a historian: comparing versions, spotting bias, catching contradictions and myths (e.g. Princip eating a sandwich). AI character chat could make this hands-on, but only if characters stay faithful to sources. A free model (Workers AI) that invents facts would teach the wrong lesson. Before building any game loop, we need to know: can the free model produce credible characters that stay faithful to free sources?
+High-school students (15–17) learn the causes of World War I as a fixed story to memorize. They rarely practice thinking like a historian: comparing versions, spotting bias, catching contradictions and myths (e.g. Princip eating a sandwich). AI character chat could make this hands-on, but only if characters stay faithful to sources. A free model (Workers AI) that invents facts would teach the wrong lesson. Before building any game loop, we need to know: can the free model produce credible characters that stay faithful to citable sources?
 
 ## Solution
 
@@ -86,7 +86,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 - **Stream contract (WebSocket):** the server sends answer text in chunks, then the source(s) for that answer, then an end marker; errors (rate limit, provider failure, bad access code) are explicit message types so the UI can show pt-br messages.
 - **Frontend/backend seam (keeps a future map cheap):** the frontend talks to the backend only through the stream contract, plus a read of character definitions. The backend holds no layout (no "list of 4", ordering or screen state). Character definitions stay data so a future map adds fields (position, sprite) without backend changes. A Phaser map, like PhiloAgents' UI, then replaces the single page and speaks the same contract.
 - **Fidelity rules enforced in the prompt:** no coverage → refuse in character; temporal cut (scene characters until the freeze shortly before 11:00 on 28/06/1914, Albertini until 1941); Princip convinced but no violent detail and no encouragement; second-hand info treated with suspicion; characters only know their own point of view.
-- **Cast gate:** a character stays only if a free source carries their own account. Harrach passed (trial protocol in Pharos 1918, pp. 158–159). Lojka failed (no free first-person account) and was replaced by Potiorek (trial testimony in Pharos 1918, pp. 155–158). The cast is data, so swapping one is a data change.
+- **Cast gate:** a character stays only if a citable source carries their own account (public domain, or short cited passages from a copyrighted work). Harrach passed (trial protocol in Pharos 1918, pp. 158–159). Lojka failed (no first-person account found when the rule required free sources; re-evaluated under the revised rule) and was replaced by Potiorek (trial testimony in Pharos 1918, pp. 155–158). The cast is data, so swapping one is a data change.
 - **Access:** single shared access code (secret) + daily per-`playerId` rate limit. Exact limit set after checking free-plan quotas.
 - **Verified facts** (details in CONTEXT.md): shots shortly before 11:00, no exact minute; AI Gateway supports OpenRouter; sandwich myth has no period source. Free plan: 10,000 Workers AI neurons/day per account (~70 answers/day on Llama 3.3 70B, ~200 on 8B), shared with the eval. Embeddings must be multilingual (`@cf/baai/bge-m3`); `bge-*-en` models are English-only.
 
@@ -123,4 +123,4 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 - The v1 question is only fidelity. Engagement comes later; resist adding game loop features.
 - Architecture reference: the PhiloAgents course ([repo](https://github.com/neural-maze/philoagents-course); transcripts gitignored at the main checkout root). Same shape — corpus as long-term memory, per-conversation history, WebSocket streaming, LLM-judge eval — minus LangGraph, agentic retrieval (we always retrieve) and conversation summarization.
 - Converting the backlog into issues is a separate task (`to-issues`).
-- No issue tracker is configured yet (no git remote, no `/setup-matt-pocock-skills`). This spec lives as a local file with the `ready-for-agent` label in frontmatter until it can be published as an issue.
+- Issue tracker: GitHub issues on `walteraandrade/chrono-digger` (public).

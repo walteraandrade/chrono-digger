@@ -47,7 +47,12 @@ Custos reais:
 
 ## Lojka de volta
 
-Lojka saiu do elenco por falta de relato livre em primeira pessoa. Volta se entrevistas dele dos anos 1920 aparecerem no ANNO (jornais austríacos digitalizados, domínio público). Com a regra 1 revista (2026-10-26), livros modernos com copyright também servem como base, via passagens curtas citadas; reavaliar.
+Lojka saiu do elenco por falta de relato livre em primeira pessoa. Volta se entrevistas dele dos anos 1920 aparecerem no ANNO (jornais austríacos digitalizados, domínio público). Reavaliado em 2026-10-26 com a regra 1 revista: **fica fora da v1.**
+
+- Achado: relato em primeira pessoa (notas privadas, original alemão, PD) só em trechos citados por Motl, "Řidič vozu smrti", *Reflex*, 25/06/2009 (tcheco), e *profil*, 14/09/2013 (alemão). Sem página, sem original visto, proveniência divergente.
+- Volta se o texto for conferido com página em exemplar físico: Skoupý (2017) ou Aichelburg (2014).
+- Divergências úteis para o fio "achar viés": Lojka põe a frase dos filhos na boca da duquesa (Harrach, Pharos p. 159: na do arquiduque) e vê os rapazes da bomba à direita.
+- Mito para caso `myth`: "Fahren Sie weiter!" da duquesa, em obituários de 07/1926 (*Grazer Volksblatt*, 29/07/1926, p. 4).
 
 ## Infra
 

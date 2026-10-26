@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chrono-digger",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "ai": { "binding": "AI" },
+  "vectorize": [{ "binding": "VECTORIZE", "index_name": "chrono-digger-corpus" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHARACTER_SESSION", "class_name": "CharacterSession" },
+      { "name": "PLAYER_QUOTA", "class_name": "PlayerQuota" },
+      { "name": "GLOBAL_QUOTA", "class_name": "GlobalQuota" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["CharacterSession", "PlayerQuota"] },
+    { "tag": "v2", "new_sqlite_classes": ["GlobalQuota"] }
+  ],
+  "vars": {
+    "DAILY_LIMIT": "10",
+    "GLOBAL_DAILY_LIMIT": "60",
+    "MIN_SOURCE_SCORE": "0.45",
+    "TURN_TIMEOUT_MS": "45000",
+    "CHAT_PROVIDER": "workers-ai",
+    "EMBEDDING_PROVIDER": "workers-ai",
+    "RETRIEVAL_INDEX": "vectorize",
+    "AI_GATEWAY_ID": "chrono-digger",
+    "CLOUDFLARE_ACCOUNT_ID": ""
+  },
+  "observability": { "enabled": true }
+}
