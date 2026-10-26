@@ -16,7 +16,7 @@ Responde à pergunta da v1: o modelo é fiel às fontes? Ver [CONTEXT.md](../CON
 | `category` | ver abaixo |
 | `question` | pergunta em pt-br |
 | `expected` | o que a resposta deve conter ou recusar |
-| `source` | obra + página; trecho literal só se a fonte for livre |
+| `source` | obra + página + passagem curta que embasa |
 
 ## Categorias
 
