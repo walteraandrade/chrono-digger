@@ -1,6 +1,6 @@
 # History Sim — Contexto
 
-Protótipo de educação gamificada: quem joga entra numa cena histórica e conversa com personagens de IA ancorados em fontes. Referência de arquitetura: série PhiloAgents ([transcripts](philoagents-transcripts.md)).
+Protótipo de educação gamificada: quem joga entra numa cena histórica e conversa com personagens de IA ancorados em fontes. Referência de arquitetura: curso PhiloAgents ([repo](https://github.com/neural-maze/philoagents-course), MIT). Transcripts dos 6 vídeos (curso completo + episódios I–V) em `philoagents-transcripts.md`, na raiz do checkout principal; fica no `.gitignore` (legendas de terceiros), então não aparece em worktrees.
 
 Status: planejamento fechado em 2026-10-22 (sessão de grilling). Pesquisa de fatos e implementação pendentes.
 
@@ -19,7 +19,7 @@ O modelo grátis (Workers AI) produz personagens críveis **e fiéis às fontes*
   - Gavrilo Princip
   - Franz von Harrach — no estribo do carro
   - Oskar Potiorek — governador da Bósnia, no carro; mudou a rota
-  - Luigi Albertini (m. 1941) — coro, fora da cena
+  - Luigi Albertini (m. 1941) — coro, fora da cena (lugar dele num futuro mapa: ver backlog)
 - **Fora da v1:** historiadores vivos (nunca), personagens inventados (backlog).
 
 ## Regras de fidelidade
@@ -58,6 +58,10 @@ O modelo grátis (Workers AI) produz personagens críveis **e fiéis às fontes*
   - Adapters: `WorkersAiProvider` (padrão), `OpenRouterProvider` (fallback pago, créditos existentes)
   - Seleção por variável de ambiente
 - **Acesso:** código de acesso + rate limit diário por pessoa (protege a cota grátis).
+- **Fronteira tela ↔ backend** (para trocar a página por um mapa sem mexer no backend):
+  - A tela só fala com o backend pelo contrato WebSocket do spec. Nenhuma outra chamada.
+  - Personagem é dado (`characterId`, nome, descrição). Posição e sprite entram depois como campos novos.
+  - O backend não conhece layout: nada de "lista de 4", ordem ou tela no servidor.
 - **Tela:** página única — intro, lista dos 4 personagens, chat por personagem, fonte recolhível. Sem login; `playerId` no `localStorage`. Sem memória entre sessões.
 
 ## Fatos a verificar antes de implementar
