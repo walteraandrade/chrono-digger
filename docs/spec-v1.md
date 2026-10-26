@@ -27,7 +27,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 5. As a student, I want to see the list of four characters with a short description of each, so that I can choose who to question.
 6. As a student, I want to open a separate chat per character, so that each conversation stays focused on one point of view.
 7. As a student, I want answers to stream in as they are generated, so that the conversation feels alive and I don't stare at a blank screen.
-8. As a student, I want every answer to show where it came from in a collapsible excerpt, so that I can check the claim against the source.
+8. As a student, I want every answer to show where it came from in a collapsible source (literal excerpt for free sources, project-written note + reference for copyrighted ones), so that I can check the claim against the source.
 9. As a student, I want source excerpts collapsed by default, so that the chat stays readable.
 10. As a student, I want to see the source's name and license/origin, so that I learn to judge source quality.
 11. As a student, I want a character to say, in character, that they don't know when the sources don't cover my question, so that I learn the limits of evidence.
@@ -50,10 +50,10 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 28. As a student, I want the page to work on a phone, so that I can use it in class.
 29. As a teacher, I want one access code to share with my class, so that only my students use the free quota.
 30. As a teacher, I want a per-person daily rate limit, so that one student can't burn the whole quota.
-31. As a teacher, I want every answer tied to a free source, so that I can trust what students read.
-32. As the developer, I want the corpus limited to free sources (public domain, Wikipedia CC BY-SA, period documents), so that there are no copyright issues.
+31. As a teacher, I want every answer tied to a citable source, so that I can trust what students read.
+32. As the developer, I want literal excerpts only from free sources (public domain, Wikipedia CC BY-SA, period documents) and copyrighted works stored only as project-written notes with a reference, so that there are no copyright issues while still using modern scholarship. Character lines are declared as authored by the project.
 33. As the developer, I want each corpus chunk tagged with character, source, license and excerpt location, so that answers can cite precisely and retrieval stays per-character.
-34. As the developer, I want a character to be dropped from the cast if no free source covers their account, so that no character is built on invention.
+34. As the developer, I want a character to be dropped from the cast if no citable source covers their account, so that no character is built on invention.
 35. As the developer, I want a `ChatProvider` interface for streaming chat, so that I can swap models without touching the character flow.
 36. As the developer, I want an `EmbeddingProvider` interface, so that I can swap embedding models (knowing it requires reindexing).
 37. As the developer, I want `WorkersAiProvider` as default and `OpenRouterProvider` as paid fallback, selected by environment variable, so that I can compare models and survive quota exhaustion.
@@ -80,7 +80,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
   - **Character definitions** — data per character: id, display name, short description, persona/voice notes, temporal cut, safety notes (Princip), which sources belong to them.
   - **Glossary** — the CONTEXT.md table as data, rendered into every system prompt.
   - **Providers (Adapter + Strategy):** `ChatProvider` (streaming chat) and `EmbeddingProvider` (vectors). Adapters `WorkersAiProvider` (default) and `OpenRouterProvider` (fallback). Chosen by env var. Both go through AI Gateway.
-  - **Corpus + indexer** — free-source texts chunked and tagged (`characterId`, source title, license, location/excerpt). A script embeds and upserts into Vectorize. Changing `EmbeddingProvider` means re-running it.
+  - **Corpus + indexer** — chunks tagged (`characterId`, source title, license, location, `kind`: `excerpt` for free sources, `note` for project-written summaries of copyrighted works). A script embeds and upserts into Vectorize. Changing `EmbeddingProvider` means re-running it.
   - **Frontend** — single page: intro, access code entry, character list, per-character chat, collapsible source. `playerId` generated and stored in `localStorage`. pt-br copy.
   - **Fidelity eval** — case file + runner + LLM judge (via `ChatProvider`). Talks to the Worker entry like the UI does.
 - **Stream contract (WebSocket):** the server sends answer text in chunks, then the source(s) for that answer, then an end marker; errors (rate limit, provider failure, bad access code) are explicit message types so the UI can show pt-br messages.
@@ -114,7 +114,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 - Navigable map (Phaser), voice (STT/TTS), more scenes (trial, Theresienstadt).
 - Login/accounts.
 - Living historians as characters (never).
-- Any copyrighted modern book in the corpus.
+- Literal excerpts from copyrighted works in the corpus or UI.
 - Measuring engagement or building a commercial demo.
 
 ## Further Notes

@@ -31,7 +31,7 @@ Resumo e memória longa por pessoa, como no PhiloAgents. Provavelmente exige ree
 
 ## Lojka de volta
 
-Lojka saiu do elenco por falta de relato livre em primeira pessoa. Volta se entrevistas dele dos anos 1920 aparecerem no ANNO (jornais austríacos digitalizados, domínio público).
+Lojka saiu do elenco por falta de relato livre em primeira pessoa. Volta se entrevistas dele dos anos 1920 aparecerem no ANNO (jornais austríacos digitalizados, domínio público). Com a regra 1 revista (2026-10-26), livros modernos com copyright também servem como base, via notas nossas; reavaliar.
 
 ## Infra
 

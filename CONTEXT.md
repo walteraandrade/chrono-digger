@@ -24,11 +24,11 @@ O modelo grátis (Workers AI) produz personagens críveis **e fiéis às fontes*
 
 ## Regras de fidelidade
 
-1. Só fontes livres: domínio público, Wikipedia (CC BY-SA), documentos da época. Nenhum livro moderno com copyright no corpus.
+1. Fontes: qualquer obra citável, inclusive livros modernos com copyright. As falas dos personagens são autoria declarada do projeto, inspiradas nas leituras. Trecho literal só de fonte livre (domínio público, Wikipedia CC BY-SA, documentos da época). Obra com copyright entra no corpus como nota escrita com nossas palavras + referência (autor, obra, página).
 2. Pergunta sem cobertura nas fontes → personagem diz, no papel, que não sabe. Nunca inventa.
 3. Corte temporal: personagens da cena sabem até o instante do congelamento; Albertini até 1941. Princip não sabe que haverá guerra.
 4. Princip: convicto, na voz dele. Sem detalhar violência, sem incentivar quem joga. Contraponto vem das outras vozes, não de um Princip arrependido.
-5. Cada resposta mostra a fonte (trecho recolhível).
+5. Cada resposta mostra a fonte (recolhível): trecho literal se a fonte for livre; nota nossa + referência se tiver copyright.
 6. Personagens isolados: cada um só conhece o próprio ponto de vista e o que quem joga contar. Informação de segunda mão é recebida com desconfiança.
 
 ## Glossário de nomes
