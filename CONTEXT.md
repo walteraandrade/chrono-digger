@@ -24,7 +24,7 @@ O modelo grátis (Workers AI) produz personagens críveis **e fiéis às fontes*
 
 ## Regras de fidelidade
 
-1. Fontes: qualquer obra citável, inclusive livros modernos com copyright. As falas dos personagens e dos historiadores são autoria declarada do projeto, inspiradas nas leituras. De obra com copyright, só passagens curtas (menos de uma página inteira) como citação (que mostram de onde veio a informação), sempre com autor, obra e página. Nunca capítulos ou blocos longos.
+1. Fontes: qualquer obra citável, inclusive livros modernos com copyright. As falas dos personagens e dos historiadores são autoria declarada do projeto, inspiradas nas leituras. De obra com copyright, só passagens curtas (menos de uma página inteira cada; no total, até 10% do livro) como citação (que mostram de onde veio a informação), sempre com autor, obra e página. Nunca capítulos ou blocos longos.
 2. Pergunta sem cobertura nas fontes → personagem diz, no papel, que não sabe. Nunca inventa.
 3. Corte temporal: personagens da cena sabem até o instante do congelamento; Albertini até 1941. Princip não sabe que haverá guerra.
 4. Princip: convicto, na voz dele. Sem detalhar violência, sem incentivar quem joga. Contraponto vem das outras vozes, não de um Princip arrependido.
