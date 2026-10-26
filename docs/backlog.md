@@ -19,13 +19,29 @@ Modo em que dois personagens discutem diante de quem joga. Exige orquestração:
 
 Voz comum de Sarajevo (ex.: vendedora sérvia ou bósnia), montada a partir de vários relatos. Marcado como fictício na UI. Cortado da v1 por não ter fonte única para conferir.
 
-## Memória entre sessões
+## Resumo de conversa longa
 
-Resumo e memória longa por pessoa, como no PhiloAgents. Provavelmente exige reescrever o fluxo (avaliar LangGraph.js).
+No PhiloAgents, "memória longa" é a base de conhecimento (aqui: o corpus) e a curta é o histórico da conversa, sem id de pessoa. Quando passa de 30 mensagens, um LLM menor resume e só as 5 últimas ficam. Aqui falta só esse resumo, dentro do Durable Object. Não exige LangGraph.
 
-## Mapa, voz e mais cenas
+Memória entre sessões por pessoa não existe no PhiloAgents; se vier, é ideia nova, não porte.
 
-- Mapa navegável (Phaser, como no PhiloAgents)
+## Mapa navegável
+
+Phaser, como no PhiloAgents (UI de ~1.650 linhas JS, MIT, sprites do LPC Generator). Custo de código baixo se a fronteira tela ↔ backend do CONTEXT.md for respeitada: o mapa troca a página e fala o mesmo contrato WebSocket. Tempo congelado simplifica: NPCs parados, sem andar sozinhos.
+
+Custos reais:
+
+- **Arte:** tileset de Sarajevo 1914 (Ponte Latina, carro, loja do Schiller), sprites com roupa da época. Assets do PhiloAgents não servem.
+- **Celular:** a UI do PhiloAgents só tem teclado; a v1 promete celular. Precisa de controle de toque.
+- **Fonte recolhível:** caixa de diálogo do Phaser é ruim para texto longo e fonte. Usar camada HTML por cima do canvas.
+- **Albertini:** coro, fora da cena; não tem lugar físico na rua. Sem sprite. Opções:
+  - Item na interface (carta ou livro aberto) — simples, mas parece menu, não personagem.
+  - Voz que comenta ao se aproximar de pontos do mapa — mais imersivo, mas exige gatilhos por lugar e quebra a regra "só fala quando perguntado".
+  - Retrato fixo num canto da tela — meio-termo; ainda é chat, sem andar.
+  - Decidir quando o mapa entrar.
+
+## Voz e mais cenas
+
 - Voz: Whisper (STT) + TTS do Workers AI
 - Novas cenas: julgamento (out/1914), Princip em Theresienstadt (1916)
 

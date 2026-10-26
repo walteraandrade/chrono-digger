@@ -84,6 +84,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
   - **Frontend** — single page: intro, access code entry, character list, per-character chat, collapsible source. `playerId` generated and stored in `localStorage`. pt-br copy.
   - **Fidelity eval** — case file + runner + LLM judge (via `ChatProvider`). Talks to the Worker entry like the UI does.
 - **Stream contract (WebSocket):** the server sends answer text in chunks, then the source(s) for that answer, then an end marker; errors (rate limit, provider failure, bad access code) are explicit message types so the UI can show pt-br messages.
+- **Frontend/backend seam (keeps a future map cheap):** the frontend talks to the backend only through the stream contract, plus a read of character definitions. The backend holds no layout (no "list of 4", ordering or screen state). Character definitions stay data so a future map adds fields (position, sprite) without backend changes. A Phaser map, like PhiloAgents' UI, then replaces the single page and speaks the same contract.
 - **Fidelity rules enforced in the prompt:** no coverage → refuse in character; temporal cut (scene characters until the freeze shortly before 11:00 on 28/06/1914, Albertini until 1941); Princip convinced but no violent detail and no encouragement; second-hand info treated with suspicion; characters only know their own point of view.
 - **Cast gate:** a character stays only if a free source carries their own account. Harrach passed (trial protocol in Pharos 1918, pp. 158–159). Lojka failed (no free first-person account) and was replaced by Potiorek (trial testimony in Pharos 1918, pp. 155–158). The cast is data, so swapping one is a data change.
 - **Access:** single shared access code (secret) + daily per-`playerId` rate limit. Exact limit set after checking free-plan quotas.
@@ -110,7 +111,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 - Investigator's notebook (save clues, mark contradictions, scored conclusion).
 - Character-to-character confrontation mode.
 - Invented street character.
-- Cross-session or long-term memory.
+- Summarizing long conversations (PhiloAgents' short-term memory trick). The corpus already plays the role of PhiloAgents' "long-term memory".
 - Navigable map (Phaser), voice (STT/TTS), more scenes (trial, Theresienstadt).
 - Login/accounts.
 - Living historians as characters (never).
@@ -120,6 +121,6 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 ## Further Notes
 
 - The v1 question is only fidelity. Engagement comes later; resist adding game loop features.
-- Architecture reference: the PhiloAgents series (transcripts in the repo), minus LangGraph and long-term memory.
+- Architecture reference: the PhiloAgents course ([repo](https://github.com/neural-maze/philoagents-course); transcripts gitignored at the main checkout root). Same shape — corpus as long-term memory, per-conversation history, WebSocket streaming, LLM-judge eval — minus LangGraph, agentic retrieval (we always retrieve) and conversation summarization.
 - Converting the backlog into issues is a separate task (`to-issues`).
 - No issue tracker is configured yet (no git remote, no `/setup-matt-pocock-skills`). This spec lives as a local file with the `ready-for-agent` label in frontmatter until it can be published as an issue.
