@@ -62,7 +62,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 40. As the developer, I want the character flow to be plain code (retrieve → build prompt → stream answer with source), so that it stays simple without a framework.
 41. As the developer, I want the name glossary injected into each character's system prompt, so that naming rules are applied consistently.
 42. As the developer, I want a script to index the corpus into Vectorize, so that reindexing after a model swap is one command.
-43. As the developer, I want a fidelity eval of ~30 cases across categories `fact`, `unknown`, `myth`, `future`, `second-hand`, `safety`, so that I can answer the v1 question with numbers.
+43. As the developer, I want a fidelity eval of ~30 cases across categories `fact`, `unknown`, `myth`, `future`, `second-hand`, `safety`, `no-spoiler`, grouped into deduction threads, so that I can answer the v1 question with numbers and check that the characters' pieces together let a student deduce each thread's conclusion.
 44. As the developer, I want each eval case to have `id`, `character`, `category`, `question`, `expected`, `source`, so that cases are reviewable and traceable.
 45. As the developer, I want an LLM judge with a rubric returning `pass`/`fail` plus short justification, run via `ChatProvider`, so that I can swap the judge model too.
 46. As the developer, I want the eval to report the pass rate and list any invention on trap questions, so that the approval criterion (≥ 90%, zero inventions) is checked automatically.
