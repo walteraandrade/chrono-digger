@@ -51,7 +51,7 @@ Each answer streams in, in the character's voice, and shows a collapsible source
 29. As a teacher, I want one access code to share with my class, so that only my students use the free quota.
 30. As a teacher, I want a per-person daily rate limit, so that one student can't burn the whole quota.
 31. As a teacher, I want every answer tied to a citable source, so that I can trust what students read.
-32. As the developer, I want copyrighted works used only through short cited passages (author, work, page), never long blocks, so that modern scholarship can back answers without copyright issues. Character and historian lines are declared as authored by the project.
+32. As the developer, I want copyrighted works used only through short cited passages (less than one full page each; author, work, page), never long blocks, so that modern scholarship can back answers without copyright issues. Character and historian lines are declared as authored by the project.
 33. As the developer, I want each corpus chunk tagged with character, source, license and excerpt location, so that answers can cite precisely and retrieval stays per-character.
 34. As the developer, I want a character to be dropped from the cast if no citable source covers their account, so that no character is built on invention.
 35. As the developer, I want a `ChatProvider` interface for streaming chat, so that I can swap models without touching the character flow.
