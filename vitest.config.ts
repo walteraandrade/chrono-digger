@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 import {
   FAKE_ACCOUNT_ID,
   FAKE_GATEWAY_ID,
+  FAKE_GATEWAY_TOKEN,
   FAKE_OPENROUTER_KEY,
   fakeOpenRouterOutbound,
 } from "./test/fakes/openrouter-outbound.ts";
@@ -60,6 +61,7 @@ export default defineConfig({
           OPENROUTER_API_KEY: FAKE_OPENROUTER_KEY,
           CLOUDFLARE_ACCOUNT_ID: FAKE_ACCOUNT_ID,
           AI_GATEWAY_ID: FAKE_GATEWAY_ID,
+          AI_GATEWAY_TOKEN: FAKE_GATEWAY_TOKEN,
         },
         { outboundService: fakeOpenRouterOutbound },
       ),

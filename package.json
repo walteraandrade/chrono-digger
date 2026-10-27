@@ -7,8 +7,8 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
-    "index:corpus": "tsx scripts/index-corpus.ts",
-    "index:check": "tsx scripts/index-corpus.ts --dry-run"
+    "index:corpus": "tsx --env-file-if-exists=.env scripts/index-corpus.ts",
+    "index:check": "tsx --env-file-if-exists=.env scripts/index-corpus.ts --dry-run"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.23.0",
