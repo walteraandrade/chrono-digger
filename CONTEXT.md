@@ -2,7 +2,7 @@
 
 Protótipo de educação gamificada: quem joga entra numa cena histórica e conversa com personagens de IA ancorados em fontes. Referência de arquitetura: curso PhiloAgents ([repo](https://github.com/neural-maze/philoagents-course), MIT). Transcripts dos 6 vídeos (curso completo + episódios I–V) em `philoagents-transcripts.md`, na raiz do checkout principal; fica no `.gitignore` (legendas de terceiros), então não aparece em worktrees.
 
-Status: planejamento fechado em 2026-10-22 (sessão de grilling). Pesquisa de fatos e implementação pendentes.
+Status: planejamento fechado em 2026-10-22. Corpus e código da v1 prontos em 2026-10-26 (testes locais com fakes). Falta: deploy na Cloudflare, indexar de verdade, runner do eval.
 
 ## Pergunta que a v1 responde
 
@@ -39,9 +39,15 @@ O modelo grátis (Workers AI) produz personagens críveis **e fiéis às fontes*
 
 | Termo pt-br | Original | Tipo |
 |---|---|---|
-| Ponte Latina | Latinska ćuprija | lugar |
+| Ponte Latina | Latinska ćuprija (em Pharos: Lateinerbrücke) | lugar |
 | Mão Negra | Crna ruka | organização |
 | Jovem Bósnia | Mlada Bosna | organização |
+| Defesa Nacional | Narodna odbrana (impresso em Pharos: "Narodna obrana") | organização |
+| cais Appel | Appelquai | lugar |
+| rio Miljacka | Miljacka | lugar |
+| rua Franz Joseph | Franz-Josef-Straße | lugar |
+| Konak | Konak | lugar |
+| Ilidže | Ilidže | lugar |
 
 ## Arquitetura v1
 
@@ -70,7 +76,7 @@ Pesquisa feita em 2026-10-25.
 
 - [x] **Horário dos tiros:** nenhuma fonte primária achada dá o minuto. Secundárias: bomba às 10h10 (Dedijer 1966), saída da prefeitura ~10h45, tiros ~10h50–10h55 (Dash), mortes até 11h30 (McMeekin 2013). Usar "pouco antes das 11h"; nunca um minuto exato.
 - [x] **Harrach:** fica. Depoimento lido no julgamento, em alemão, em Pharos, *Der Prozeß gegen die Attentäter von Sarajewo* (Berlim, 1918), p. 158–159 — domínio público ([archive.org](https://archive.org/details/derprozessgegend01prin)). Cobre: estribo esquerdo, tiro antes da bomba, "Sopherl… bleibe am Leben für unsere Kinder", "Es ist nichts!". A tradução inglesa da firstworldwar.com não diz a origem; não usar.
-- [x] **Lojka:** nenhum relato em primeira pessoa em fonte livre. Pharos não traz o depoimento dele. As "notas privadas" citadas na *profil* não têm origem nem são livres. Só sobra a Wikipedia (terceira pessoa). Entrevistas dos anos 1920 podem estar no ANNO (jornais austríacos digitalizados); não buscado. **Saiu do elenco em 2026-10-26** (ver backlog).
+- [x] **Lojka:** nenhum relato em primeira pessoa em fonte livre. Pharos não traz o depoimento dele. As "notas privadas" citadas na *profil* não têm origem nem são livres. Só sobra a Wikipedia (terceira pessoa). Entrevistas dos anos 1920 podem estar no ANNO (jornais austríacos digitalizados); não buscado. **Saiu do elenco em 2026-10-26**; reavaliado com a regra 1 revista no mesmo dia: segue fora (relato só em trechos de revista, sem página; ver backlog).
 - [x] **Potiorek entra no lugar de Lojka.** Estava no mesmo carro. Depoimento longo em primeira pessoa em Pharos, p. 155–158 (ordem ao chauffeur para não virar, tiros vindos da direita, Sophie caindo). Também é ele quem mudou a rota — bom para "achar viés".
 - [x] **Princip:** Pharos traz o interrogatório dele no julgamento (out/1914). É depois do congelamento; usar só o que ele já sabia em 28/06. **Decidido em 2026-10-26:** ele fala como no processo (conta de Ciganović e das armas de Belgrado), não como na negação de 28/06.
 - [x] **Mito do sanduíche:** nenhuma fonte da época. Mais antiga achada: o romance *O homem que matou Getúlio Vargas*, de Jô Soares (1998; em inglês *Twelve Fingers*, 2001). Espalhou com o documentário da BBC *Days That Shook the World* (2003). Testemunha Milan Drnić, à porta da Schiller, viu Princip com a pistola; nenhum sanduíche. Fonte: Mike Dash (2011), Wikipedia.
