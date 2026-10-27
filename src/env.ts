@@ -10,6 +10,7 @@ export interface Env {
   EMBEDDING_PROVIDER?: string;
   RETRIEVAL_INDEX?: string;
   AI_GATEWAY_ID?: string;
+  AI_GATEWAY_TOKEN?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
   WORKERS_AI_CHAT_MODEL?: string;
   WORKERS_AI_EMBEDDING_MODEL?: string;

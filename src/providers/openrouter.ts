@@ -8,6 +8,7 @@ export type OpenRouterConfig = {
   apiKey: string;
   accountId: string;
   gatewayId: string;
+  gatewayToken?: string;
   chatModel?: string;
   embeddingModel?: string;
   fetcher?: typeof fetch;
@@ -18,10 +19,14 @@ export type OpenRouterProvider = ChatProvider & EmbeddingProvider;
 export const openRouterGatewayUrl = (accountId: string, gatewayId: string) =>
   `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/openrouter/v1`;
 
+export const gatewayAuthHeaders = (token?: string): Record<string, string> =>
+  token ? { "cf-aig-authorization": `Bearer ${token}` } : {};
+
 export const createOpenRouterProvider = ({
   apiKey,
   accountId,
   gatewayId,
+  gatewayToken,
   chatModel = DEFAULT_OPENROUTER_CHAT_MODEL,
   embeddingModel = DEFAULT_OPENROUTER_EMBEDDING_MODEL,
   fetcher = (input, init) => fetch(input, init),
@@ -33,7 +38,11 @@ export const createOpenRouterProvider = ({
     const response = await fetcher(`${baseUrl}${path}`, {
       method: "POST",
       signal,
-      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+        ...gatewayAuthHeaders(gatewayToken),
+      },
       body: JSON.stringify(body),
     });
     if (!response.ok) throw new ProviderError(`openrouter: ${path} returned ${response.status}`);

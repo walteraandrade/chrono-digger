@@ -1,6 +1,6 @@
 import { parseArgs } from "node:util";
 import { chunkToMetadata } from "../src/corpus.ts";
-import { createOpenRouterProvider } from "../src/providers/openrouter.ts";
+import { createOpenRouterProvider, gatewayAuthHeaders } from "../src/providers/openrouter.ts";
 import type { Chunk, EmbeddingProvider } from "../src/providers/types.ts";
 import { type AiRunner, createWorkersAiProvider } from "../src/providers/workers-ai.ts";
 import { countByCharacter, loadCorpus } from "./corpus-loader.ts";
@@ -26,14 +26,14 @@ const cloudflareHeaders = (token: string) => ({
   "content-type": "application/json",
 });
 
-const restAiRunner = (accountId: string, token: string, gatewayId?: string): AiRunner => ({
+const restAiRunner = (accountId: string, token: string, gatewayId?: string, gatewayToken?: string): AiRunner => ({
   async run(model, inputs) {
     const url = gatewayId
       ? `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${model}`
       : `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
     const response = await fetch(url, {
       method: "POST",
-      headers: cloudflareHeaders(token),
+      headers: { ...cloudflareHeaders(token), ...(gatewayId ? gatewayAuthHeaders(gatewayToken) : {}) },
       body: JSON.stringify(inputs),
     });
     if (!response.ok) throw new Error(`workers-ai ${model}: ${response.status} ${await response.text()}`);
@@ -45,10 +45,11 @@ const restAiRunner = (accountId: string, token: string, gatewayId?: string): AiR
 const selectEmbeddingProvider = (): EmbeddingProvider => {
   const accountId = required("CLOUDFLARE_ACCOUNT_ID");
   const gatewayId = env.AI_GATEWAY_ID || undefined;
+  const gatewayToken = env.AI_GATEWAY_TOKEN || undefined;
   const provider = env.EMBEDDING_PROVIDER || "workers-ai";
   if (provider === "workers-ai")
     return createWorkersAiProvider({
-      ai: restAiRunner(accountId, required("CLOUDFLARE_API_TOKEN"), gatewayId),
+      ai: restAiRunner(accountId, required("CLOUDFLARE_API_TOKEN"), gatewayId, gatewayToken),
       embeddingModel: env.WORKERS_AI_EMBEDDING_MODEL || undefined,
     });
   if (provider === "openrouter")
@@ -56,6 +57,7 @@ const selectEmbeddingProvider = (): EmbeddingProvider => {
       apiKey: required("OPENROUTER_API_KEY"),
       accountId,
       gatewayId: required("AI_GATEWAY_ID"),
+      gatewayToken,
       embeddingModel: env.OPENROUTER_EMBEDDING_MODEL || undefined,
     });
   throw new Error(`unknown EMBEDDING_PROVIDER "${provider}"`);

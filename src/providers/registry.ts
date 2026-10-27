@@ -40,6 +40,7 @@ const openRouter = (env: Env) =>
     apiKey: env.OPENROUTER_API_KEY ?? "",
     accountId: env.CLOUDFLARE_ACCOUNT_ID ?? "",
     gatewayId: env.AI_GATEWAY_ID ?? "",
+    gatewayToken: env.AI_GATEWAY_TOKEN || undefined,
     chatModel: env.OPENROUTER_CHAT_MODEL || undefined,
     embeddingModel: env.OPENROUTER_EMBEDDING_MODEL || undefined,
   });

@@ -43,6 +43,7 @@ Create an AI Gateway named as `AI_GATEWAY_ID` (default `chrono-digger`) in the d
 | `EMBEDDING_PROVIDER` | var | `workers-ai` (default) or `openrouter`; changing it requires reindexing |
 | `RETRIEVAL_INDEX` | var | `vectorize` (default) |
 | `AI_GATEWAY_ID` | var | AI Gateway id used by both adapters |
+| `AI_GATEWAY_TOKEN` | secret | required when the gateway has Authenticated Gateway on; sent as `cf-aig-authorization` by the `openrouter` adapter and by `index:corpus`. The `AI` binding authenticates on its own |
 | `CLOUDFLARE_ACCOUNT_ID` | var | required for `openrouter` (gateway URL) |
 | `OPENROUTER_API_KEY` | secret | required for `openrouter` |
 | `WORKERS_AI_CHAT_MODEL` / `WORKERS_AI_EMBEDDING_MODEL` | var | defaults `@cf/meta/llama-3.3-70b-instruct-fp8-fast` / `@cf/baai/bge-m3` |
@@ -62,7 +63,7 @@ pnpm index:check  # validate corpus/*.json, upload nothing
 pnpm index:corpus # embed and upsert corpus/*.json into Vectorize
 ```
 
-`index:corpus` reads `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Workers AI + Vectorize edit), `AI_GATEWAY_ID`, `VECTORIZE_INDEX` (default `chrono-digger-corpus`), `EMBEDDING_PROVIDER` and, for OpenRouter, `OPENROUTER_API_KEY`. Upserts are idempotent by chunk id, so rerunning reindexes.
+`index:corpus` loads `.env` if present and reads `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Workers AI + Vectorize edit), `AI_GATEWAY_ID`, `AI_GATEWAY_TOKEN` (authenticated gateway only), `VECTORIZE_INDEX` (default `chrono-digger-corpus`), `EMBEDDING_PROVIDER` and, for OpenRouter, `OPENROUTER_API_KEY`. Upserts are idempotent by chunk id, so rerunning reindexes.
 
 ## Tests
 
