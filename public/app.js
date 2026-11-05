@@ -64,13 +64,30 @@ const fetchCharacters = async (accessCode) => {
   return (await response.json()).characters;
 };
 
+const portraitUrl = (character) => `/portraits/${encodeURIComponent(character.id)}.png`;
+
+const portrait = (character, className) =>
+  el("img", {
+    className: `portrait ${className}`,
+    src: portraitUrl(character),
+    alt: "",
+    width: 64,
+    height: 64,
+    onerror: (event) => {
+      event.currentTarget.hidden = true;
+    },
+  });
+
 const renderCast = () => {
   $("character-list").replaceChildren(
     ...state.characters.map((character) =>
       el("li", {}, [
         el("button", { type: "button", className: "card", onclick: () => openChat(character) }, [
-          el("strong", { textContent: character.displayName }),
-          el("span", { textContent: character.description }),
+          portrait(character, "portrait-card"),
+          el("div", {}, [
+            el("strong", { textContent: character.displayName }),
+            el("span", { textContent: character.description }),
+          ]),
         ]),
       ]),
     ),
@@ -235,6 +252,7 @@ const isOpen = (conn) => conn !== null && conn.socket.readyState === WebSocket.O
 const openChat = async (character) => {
   closeConnection();
   state.current = character;
+  $("chat-portrait").replaceWith(Object.assign(portrait(character, "portrait-header"), { id: "chat-portrait" }));
   $("chat-name").textContent = character.displayName;
   $("chat-description").textContent = character.description;
   $("messages").replaceChildren();
