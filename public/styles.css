@@ -168,6 +168,26 @@ button.ghost {
   border: 1px solid var(--border);
   padding: 16px;
   font-weight: 400;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.portrait {
+  flex: none;
+  image-rendering: pixelated;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.portrait-card {
+  width: 96px;
+  height: 96px;
+}
+
+.portrait-header {
+  width: 64px;
+  height: 64px;
 }
 
 .card:hover {

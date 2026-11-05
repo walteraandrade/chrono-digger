@@ -1,0 +1,41 @@
+{
+  "size": 64,
+  "colors": 16,
+  "background": "#1d3b3f",
+  "model": "@cf/black-forest-labs/flux-2-klein-4b",
+  "style": "Convert the photo in image 0 into a 16-bit pixel art character portrait for a retro adventure game. Head-and-shoulders bust, head centered and filling the upper two thirds. Large visible square pixels on a 64x64 grid, clean dark outlines, flat cel shading with 3 tones per material, warm sepia and muted earth palette, solid plain dark teal background. This is a faithful portrait: keep the same person, same age, same face shape, same hairline, same facial hair, same clothing as image 0. No text.",
+  "portraits": [
+    {
+      "id": "princip",
+      "file": "File:Gavrilo Princip, cell, headshot, bw (cropped).jpg",
+      "license": "Public domain",
+      "credit": "Unknown author, 2 July 1914",
+      "crop": [0.0, 0.0, 1.0],
+      "description": "Young man, about 19, thin face, messy dark hair, faint thin mustache, dark jacket."
+    },
+    {
+      "id": "harrach",
+      "file": "File:František Maria Harrach (1870–1937) (cropped).jpg",
+      "license": "Public domain",
+      "credit": "Hermann Clemens Kosel, 1909",
+      "crop": [0.027, 0.12, 0.96],
+      "description": "Pale-skinned man in his forties, receding hairline with short dark hair on the sides, large curled handlebar mustache, high white collar, striped tie, dark suit."
+    },
+    {
+      "id": "potiorek",
+      "file": "File:Armee-Inspektor FZM Oskar Potiorek 1914 Pietzner.png",
+      "license": "Public domain",
+      "credit": "Carl Pietzner, 1908–1914",
+      "crop": [0.058, 0.176, 0.78],
+      "description": "Pale-skinned man about 60, very short cropped grey hair, grey mustache, stern look, light Austro-Hungarian general uniform with high collar and star insignia."
+    },
+    {
+      "id": "albertini",
+      "file": "File:H.E. Carlo Schauzer, Senator Luigi Albertini, 11-2-21 LOC npcc.05255.jpg",
+      "license": "Public domain",
+      "credit": "National Photo Company Collection, Library of Congress, 1921",
+      "crop": [0.547, 0.23, 0.17],
+      "description": "Pale-skinned man about 50, mostly bald head, small grey mustache, white shirt, black bow tie, dark suit."
+    }
+  ]
+}
