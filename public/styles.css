@@ -510,8 +510,9 @@ button.tab.has-news::after {
 }
 
 .diary-closing {
-  border-left: 3px solid var(--accent);
-  padding-left: 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
