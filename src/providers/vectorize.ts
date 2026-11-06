@@ -1,5 +1,6 @@
+import * as Effect from "effect/Effect";
 import { metadataToChunk } from "../corpus";
-import type { RetrievalIndex } from "./types";
+import { type RetrievalIndex, toProviderError } from "./types";
 
 export type VectorMatch = { id: string; score: number; metadata?: Record<string, unknown> };
 
@@ -12,14 +13,18 @@ export interface VectorQueryable {
 
 export const createVectorizeIndex = (index: VectorQueryable): RetrievalIndex => ({
   name: "vectorize",
-  async search(vector, { characterId, topK }) {
-    const { matches } = await index.query(vector, {
-      topK,
-      filter: { characterId: { $eq: characterId } },
-      returnMetadata: "all",
-    });
-    return matches
-      .map((match) => ({ ...metadataToChunk(match.id, match.metadata), score: match.score }))
-      .filter((chunk) => chunk.characterId === characterId);
-  },
+  search: (vector, { characterId, topK }) =>
+    Effect.tryPromise({
+      try: async () => {
+        const { matches } = await index.query(vector, {
+          topK,
+          filter: { characterId: { $eq: characterId } },
+          returnMetadata: "all",
+        });
+        return matches
+          .map((match) => ({ ...metadataToChunk(match.id, match.metadata), score: match.score }))
+          .filter((chunk) => chunk.characterId === characterId);
+      },
+      catch: toProviderError("vectorize: query"),
+    }),
 });

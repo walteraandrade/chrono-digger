@@ -1,62 +1,41 @@
+import * as Effect from "effect/Effect";
+import * as Stream from "effect/Stream";
+import { ProviderError, toProviderError } from "./types";
+
 const IDLE_TIMEOUT_MS = 30_000;
-
-const readWithTimeout = <T>(reader: ReadableStreamDefaultReader<T>, ms: number) =>
-  new Promise<ReadableStreamReadResult<T>>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`stream idle for ${ms}ms`)), ms);
-    reader.read().then(
-      (result) => {
-        clearTimeout(timer);
-        resolve(result);
-      },
-      (error: unknown) => {
-        clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
-
-export async function* readLines(
-  stream: ReadableStream<Uint8Array>,
-  idleTimeoutMs = IDLE_TIMEOUT_MS,
-): AsyncGenerator<string> {
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  try {
-    while (true) {
-      const { done, value } = await readWithTimeout(reader, idleTimeoutMs);
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split(/\r?\n/);
-      buffer = lines.pop() ?? "";
-      yield* lines;
-    }
-    buffer += decoder.decode();
-    if (buffer) yield buffer;
-  } finally {
-    reader.cancel().catch(() => undefined);
-  }
-}
-
-export async function* readSseData(stream: ReadableStream<Uint8Array>): AsyncGenerator<unknown> {
-  for await (const line of readLines(stream)) {
-    if (!line.startsWith("data:")) continue;
-    const data = line.slice(5).trim();
-    if (!data) continue;
-    if (data === "[DONE]") return;
-    yield JSON.parse(data) as unknown;
-  }
-}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-export const extractDelta = (event: unknown): string => {
-  if (!isRecord(event)) return "";
-  if (isRecord(event.error)) throw new Error(String(event.error.message ?? "provider stream error"));
-  if (typeof event.response === "string") return event.response;
+const parseEvent = (data: string) =>
+  Effect.try({ try: () => JSON.parse(data) as unknown, catch: toProviderError("sse: invalid event") });
+
+const extractDelta = (event: unknown): Effect.Effect<string, ProviderError> => {
+  if (!isRecord(event)) return Effect.succeed("");
+  if (isRecord(event.error))
+    return Effect.fail(new ProviderError({ message: String(event.error.message ?? "provider stream error") }));
+  if (typeof event.response === "string") return Effect.succeed(event.response);
   const choice = Array.isArray(event.choices) ? event.choices[0] : undefined;
-  if (isRecord(choice) && isRecord(choice.delta) && typeof choice.delta.content === "string")
-    return choice.delta.content;
-  return "";
+  return Effect.succeed(
+    isRecord(choice) && isRecord(choice.delta) && typeof choice.delta.content === "string" ? choice.delta.content : "",
+  );
 };
+
+export const readSseDeltas = (
+  stream: ReadableStream<Uint8Array>,
+  idleTimeoutMs = IDLE_TIMEOUT_MS,
+): Stream.Stream<string, ProviderError> =>
+  Stream.fromReadableStream({ evaluate: () => stream, onError: toProviderError("sse: read failed") }).pipe(
+    Stream.timeoutOrElse({
+      duration: idleTimeoutMs,
+      orElse: () => Stream.fail(new ProviderError({ message: `stream idle for ${idleTimeoutMs}ms` })),
+    }),
+    Stream.decodeText(),
+    Stream.splitLines,
+    Stream.filter((line) => line.startsWith("data:")),
+    Stream.map((line) => line.slice(5).trim()),
+    Stream.filter((data) => data !== ""),
+    Stream.takeWhile((data) => data !== "[DONE]"),
+    Stream.mapEffect((data) => parseEvent(data).pipe(Effect.flatMap(extractDelta))),
+    Stream.filter((delta) => delta !== ""),
+  );

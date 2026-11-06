@@ -1,17 +1,31 @@
+import * as Data from "effect/Data";
+import type * as Effect from "effect/Effect";
+import type * as Stream from "effect/Stream";
+
 export type ChatRole = "system" | "user" | "assistant";
 
 export type ChatMessage = { role: ChatRole; content: string };
 
-export type ChatOptions = { maxTokens?: number; signal?: AbortSignal };
+export type ChatOptions = { maxTokens?: number };
+
+export class ProviderError extends Data.TaggedError("ProviderError")<{
+  readonly message: string;
+  readonly cause?: unknown;
+}> {}
+
+export const toProviderError =
+  (context: string) =>
+  (cause: unknown): ProviderError =>
+    cause instanceof ProviderError ? cause : new ProviderError({ message: `${context}: ${String(cause)}`, cause });
 
 export interface ChatProvider {
   readonly name: string;
-  stream(messages: ChatMessage[], options?: ChatOptions): AsyncIterable<string>;
+  stream(messages: ChatMessage[], options?: ChatOptions): Stream.Stream<string, ProviderError>;
 }
 
 export interface EmbeddingProvider {
   readonly name: string;
-  embed(texts: string[]): Promise<number[][]>;
+  embed(texts: string[]): Effect.Effect<number[][], ProviderError>;
 }
 
 export type Chunk = {
@@ -33,12 +47,5 @@ export type SearchOptions = { characterId: string; topK: number };
 
 export interface RetrievalIndex {
   readonly name: string;
-  search(vector: number[], options: SearchOptions): Promise<ScoredChunk[]>;
-}
-
-export class ProviderError extends Error {
-  constructor(message: string, options?: { cause?: unknown }) {
-    super(message, options);
-    this.name = "ProviderError";
-  }
+  search(vector: number[], options: SearchOptions): Effect.Effect<ScoredChunk[], ProviderError>;
 }

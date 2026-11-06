@@ -8,9 +8,9 @@ History Sim v1: a pt-br single page where students question source-grounded AI c
 - `src/worker.ts` — HTTP/WebSocket routing, access code
 - `src/session.ts` — `CharacterSession` Durable Object (history per `(playerId, characterId)`, hibernatable WebSockets)
 - `src/quota.ts` — `PlayerQuota` and `GlobalQuota` Durable Objects (daily limits per `playerId` and for the whole deployment, UTC day; failed turns are refunded)
-- `src/turn.ts`, `src/prompt.ts` — character turn: retrieve → build prompt → stream → sources
+- `src/turn.ts`, `src/prompt.ts` — character turn as an `Effect`: retrieve → build prompt → stream → sources, under one deadline
 - `src/characters.ts`, `src/glossary.ts` — data
-- `src/providers/` — `ChatProvider` / `EmbeddingProvider` / `RetrievalIndex`, adapters `workers-ai`, `openrouter`, `vectorize`
+- `src/providers/` — `ChatProvider` / `EmbeddingProvider` / `RetrievalIndex` (return `Effect`/`Stream`, fail with `ProviderError`), adapters `workers-ai`, `openrouter`, `vectorize`. Import Effect by module (`effect/Effect`), not from the `effect` barrel: the barrel doubles test time
 - `public/` — static frontend served through Workers Assets
 - `scripts/index-corpus.ts` — embeds `corpus/*.json` and upserts into Vectorize
 - `test/` — tests through the Worker entry only; fakes injected via env at the provider boundary

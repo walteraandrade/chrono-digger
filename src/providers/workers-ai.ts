@@ -1,5 +1,7 @@
-import { extractDelta, readSseData } from "./sse";
-import { type ChatProvider, type EmbeddingProvider, ProviderError } from "./types";
+import * as Effect from "effect/Effect";
+import * as Stream from "effect/Stream";
+import { readSseDeltas } from "./sse";
+import { type ChatProvider, type EmbeddingProvider, ProviderError, toProviderError } from "./types";
 
 export const DEFAULT_WORKERS_AI_CHAT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 export const DEFAULT_WORKERS_AI_EMBEDDING_MODEL = "@cf/baai/bge-m3";
@@ -22,10 +24,11 @@ export type WorkersAiProvider = ChatProvider & EmbeddingProvider;
 const isReadableStream = (value: unknown): value is ReadableStream<Uint8Array> =>
   typeof value === "object" && value !== null && "getReader" in value;
 
-const toEmbeddings = (result: unknown): number[][] => {
+const toEmbeddings = (result: unknown): Effect.Effect<number[][], ProviderError> => {
   const data = (result as { data?: unknown } | null)?.data;
-  if (!Array.isArray(data)) throw new ProviderError("workers-ai: embedding response without data");
-  return data as number[][];
+  return Array.isArray(data)
+    ? Effect.succeed(data as number[][])
+    : Effect.fail(new ProviderError({ message: "workers-ai: embedding response without data" }));
 };
 
 export const createWorkersAiProvider = ({
@@ -35,19 +38,20 @@ export const createWorkersAiProvider = ({
   embeddingModel = DEFAULT_WORKERS_AI_EMBEDDING_MODEL,
 }: WorkersAiConfig): WorkersAiProvider => {
   const options: AiRunOptions = gatewayId ? { gateway: { id: gatewayId } } : {};
+  const run = (model: string, inputs: Record<string, unknown>) =>
+    Effect.tryPromise({ try: () => ai.run(model, inputs, options), catch: toProviderError(`workers-ai: ${model}`) });
   return {
     name: "workers-ai",
-    async *stream(messages, { maxTokens = 512, signal } = {}) {
-      const result = await ai.run(chatModel, { messages, stream: true, max_tokens: maxTokens }, options);
-      if (!isReadableStream(result)) throw new ProviderError("workers-ai: expected a stream");
-      for await (const event of readSseData(result)) {
-        signal?.throwIfAborted();
-        const delta = extractDelta(event);
-        if (delta) yield delta;
-      }
-    },
-    async embed(texts) {
-      return toEmbeddings(await ai.run(embeddingModel, { text: texts }, options));
-    },
+    stream: (messages, { maxTokens = 512 } = {}) =>
+      Stream.unwrap(
+        run(chatModel, { messages, stream: true, max_tokens: maxTokens }).pipe(
+          Effect.flatMap((result) =>
+            isReadableStream(result)
+              ? Effect.succeed(readSseDeltas(result))
+              : Effect.fail(new ProviderError({ message: "workers-ai: expected a stream" })),
+          ),
+        ),
+      ),
+    embed: (texts) => run(embeddingModel, { text: texts }).pipe(Effect.flatMap(toEmbeddings)),
   };
 };

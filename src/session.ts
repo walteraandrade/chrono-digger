@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import * as Effect from "effect/Effect";
 import { findCharacter } from "./characters";
 import { type ErrorType, type HistoryEntry, type ServerMessage, errorMessage, parseClientMessage } from "./contract";
 import type { Env } from "./env";
@@ -97,15 +98,21 @@ export const createCharacterSession = (registry: ProviderRegistry) =>
           role,
           content: text,
         }));
-        const { answer, sources } = await runCharacterTurn({
-          character,
-          question,
-          history,
-          providers: selectProviders(registry, this.env),
-          minScore: parseMinSourceScore(this.env.MIN_SOURCE_SCORE),
-          timeoutMs: parseTurnTimeoutMs(this.env.TURN_TIMEOUT_MS),
-          onChunk: (text) => send(ws, { type: "chunk", text }),
-        });
+        const { answer, sources } = await Effect.runPromise(
+          selectProviders(registry, this.env).pipe(
+            Effect.flatMap((providers) =>
+              runCharacterTurn({
+                character,
+                question,
+                history,
+                providers,
+                minScore: parseMinSourceScore(this.env.MIN_SOURCE_SCORE),
+                timeoutMs: parseTurnTimeoutMs(this.env.TURN_TIMEOUT_MS),
+                onChunk: (text) => send(ws, { type: "chunk", text }),
+              }),
+            ),
+          ),
+        );
         this.appendTurn(question, answer, sources);
         send(ws, { type: "sources", sources });
         send(ws, { type: "end" });
