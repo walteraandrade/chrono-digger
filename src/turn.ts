@@ -3,13 +3,13 @@ import * as Stream from "effect/Stream";
 import type { Character } from "./characters";
 import { type HistoryMessage, buildPrompt } from "./prompt";
 import type { Providers } from "./providers/registry";
-import { type Chunk, ProviderError } from "./providers/types";
+import { type Chunk, ProviderError, type Source } from "./providers/types";
+
+export type { Source };
 
 export const TOP_K = 4;
 export const DEFAULT_MIN_SOURCE_SCORE = 0.45;
 export const DEFAULT_TURN_TIMEOUT_MS = 45_000;
-
-export type Source = Omit<Chunk, "characterId">;
 
 export type TurnResult = { answer: string; sources: Source[] };
 
