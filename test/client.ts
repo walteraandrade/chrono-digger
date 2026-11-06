@@ -19,8 +19,8 @@ export type Turn = {
 
 export const newPlayerId = () => crypto.randomUUID();
 
-export const getCharacters = (accessCode?: string) =>
-  SELF.fetch(`${BASE_URL}/api/characters`, {
+export const getCharacters = (accessCode?: string, baseUrl = BASE_URL) =>
+  SELF.fetch(`${baseUrl}/api/characters`, {
     headers: accessCode === undefined ? {} : { "x-access-code": accessCode },
   });
 
@@ -28,13 +28,15 @@ export const connect = async ({
   characterId,
   playerId,
   accessCode = TEST_ACCESS_CODE,
+  baseUrl = BASE_URL,
 }: {
   characterId: string;
   playerId: string;
   accessCode?: string | null;
+  baseUrl?: string;
 }) => {
   const params = new URLSearchParams({ playerId, ...(accessCode === null ? {} : { accessCode }) });
-  const response = await SELF.fetch(`${BASE_URL}/api/characters/${characterId}/session?${params}`, {
+  const response = await SELF.fetch(`${baseUrl}/api/characters/${characterId}/session?${params}`, {
     headers: { upgrade: "websocket" },
   });
   const ws = response.webSocket;

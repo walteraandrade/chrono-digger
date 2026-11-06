@@ -39,7 +39,14 @@ const playerId = (() => {
   return created;
 })();
 
-const state = { accessCode: storage.get(STORAGE.accessCode) ?? "", characters: [], current: null, conn: null, busy: false };
+const state = {
+  accessCode: storage.get(STORAGE.accessCode) ?? "",
+  accessOpen: false,
+  characters: [],
+  current: null,
+  conn: null,
+  busy: false,
+};
 
 const el = (tag, props = {}, children = []) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -281,7 +288,7 @@ const ask = async (text) => {
 $("access-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const code = $("access-code").value.trim();
-  if (code) enterScene(code);
+  if (code || state.accessOpen) enterScene(code);
 });
 
 $("ask-form").addEventListener("submit", (event) => {
@@ -305,3 +312,17 @@ $("back").addEventListener("click", () => {
 });
 
 if (state.accessCode) $("access-code").value = state.accessCode;
+
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+const openAccessIfBypassed = async () => {
+  if (!LOCAL_HOSTNAMES.has(location.hostname)) return;
+  const response = await fetch("/api/characters").catch(() => null);
+  if (!response?.ok) return;
+  state.accessOpen = true;
+  $("access-code").required = false;
+  $("access-code").hidden = true;
+  document.querySelector('label[for="access-code"]').hidden = true;
+};
+
+openAccessIfBypassed();

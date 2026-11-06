@@ -12,6 +12,11 @@ describe("access code", () => {
     }
   });
 
+  it("still requires the code on localhost when the bypass is not enabled", async () => {
+    const response = await getCharacters(undefined, "http://localhost:8787");
+    expect(response.status).toBe(401);
+  });
+
   it("returns character definitions as data with the right access code", async () => {
     const response = await getCharacters(TEST_ACCESS_CODE);
     expect(response.status).toBe(200);

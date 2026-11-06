@@ -35,6 +35,7 @@ Create an AI Gateway named as `AI_GATEWAY_ID` (default `chrono-digger`) in the d
 | Name | Kind | Notes |
 |---|---|---|
 | `ACCESS_CODE` | secret | shared class code (`wrangler secret put ACCESS_CODE`) |
+| `ACCESS_CODE_DISABLED` | dev only | `true` in `.dev.vars` opens access without a code, only for requests to `localhost`, `127.0.0.1` or `[::1]`. Other hosts still require `ACCESS_CODE` |
 | `DAILY_LIMIT` | var | messages per `playerId` per UTC day, default `10` |
 | `GLOBAL_DAILY_LIMIT` | var | messages for the whole deployment per UTC day, default `60`. The free plan gives ~70 answers/day on Llama 3.3 70B (10k neurons), shared with the fidelity eval |
 | `MIN_SOURCE_SCORE` | var | minimum retrieval score for a passage to be used, default `0.45` (bge-m3 cosine). **Needs calibration** against the real index: run the fidelity eval and adjust so trap questions get no passage and covered questions keep theirs. Changing the embedding model requires recalibrating |
@@ -51,7 +52,7 @@ Create an AI Gateway named as `AI_GATEWAY_ID` (default `chrono-digger`) in the d
 
 Bindings (`wrangler.jsonc`): `AI`, `VECTORIZE`, `CHARACTER_SESSION`, `PLAYER_QUOTA`, `GLOBAL_QUOTA` (SQLite-backed Durable Objects), `ASSETS`.
 
-For local dev put secrets in `.dev.vars` (`ACCESS_CODE=...`). Workers AI and Vectorize have no local emulation; they need a Cloudflare login.
+For local dev put secrets in `.dev.vars` (`ACCESS_CODE=...`, optionally `ACCESS_CODE_DISABLED=true`). Workers AI and Vectorize have no local emulation; they need a Cloudflare login.
 
 ## Commands
 
