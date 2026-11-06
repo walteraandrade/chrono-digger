@@ -64,7 +64,7 @@ export const fakeOpenRouterOutbound = async (request: Request): Promise<Response
       data: (body.input ?? []).map((text, index) => ({ index, embedding: hashEmbed(text) })),
     });
   if (request.url === `${BASE}/chat/completions`)
-    return scriptedChat(body.messages?.at(-1)?.content ?? "") ?? sse([
+    return scriptedChat(body.messages?.findLast(({ role }) => role === "user")?.content ?? "") ?? sse([
       delta(`[openrouter ${body.model}`),
       delta(" via gateway]"),
       "[DONE]",

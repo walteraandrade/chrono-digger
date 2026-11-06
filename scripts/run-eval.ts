@@ -1,17 +1,18 @@
 import { type ChildProcess, execFileSync, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { rmSync } from "node:fs";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { type CaseResult, type Connect, askCharacter, runCases } from "./eval-client.ts";
+import { type CaseResult, type Connect, RESULTS_DIR, type RunFile, askCharacter, runCases } from "./eval-client.ts";
 import { type EvalCase, loadSuite } from "./eval-cases.ts";
 
 const PROVIDERS = ["workers-ai", "openrouter"];
-const RESULTS_DIR = "eval/results";
 const SERVER_READY_TIMEOUT_MS = 90_000;
 const LOCAL_GLOBAL_DAILY_LIMIT = "1000";
-
-type RunFile = { runId: string; provider: string; commit: string; startedAt: string; results: Record<string, CaseResult> };
+const OPENROUTER_REQUIRED_ENV = ["OPENROUTER_API_KEY", "CLOUDFLARE_ACCOUNT_ID"];
+const OPENROUTER_OPTIONAL_ENV = ["AI_GATEWAY_ID", "AI_GATEWAY_TOKEN"];
 
 const { values: args } = parseArgs({
   options: {
@@ -31,7 +32,24 @@ const connect: Connect = async (url, { onMessage, onClose }) => {
   return { send: (data) => socket.send(data), close: () => socket.close(1000) };
 };
 
-const startServer = (provider: string, port: string, accessCode: string) =>
+const writeOpenRouterEnv = async () => {
+  const missing = OPENROUTER_REQUIRED_ENV.filter((name) => !process.env[name]);
+  if (missing.length > 0) throw new Error(`missing environment variables: ${missing.join(", ")}`);
+  const dir = await mkdtemp(join(tmpdir(), "chrono-eval-"));
+  const lines = [...OPENROUTER_REQUIRED_ENV, ...OPENROUTER_OPTIONAL_ENV]
+    .filter((name) => process.env[name])
+    .map((name) => `${name}=${process.env[name]}`);
+  const path = join(dir, "server.env");
+  await writeFile(path, `${lines.join("\n")}\n`, { mode: 0o600 });
+  return { path, remove: () => rmSync(dir, { recursive: true, force: true }) };
+};
+
+const serverProcessEnv = () => {
+  const { CLOUDFLARE_API_TOKEN: _token, CLOUDFLARE_ACCOUNT_ID: _account, ...env } = process.env;
+  return env;
+};
+
+const startServer = (provider: string, port: string, accessCode: string, envFile: string | undefined) =>
   spawn(
     "node_modules/.bin/wrangler",
     [
@@ -49,8 +67,9 @@ const startServer = (provider: string, port: string, accessCode: string) =>
       `CHAT_PROVIDER:${provider}`,
       "--var",
       `GLOBAL_DAILY_LIMIT:${LOCAL_GLOBAL_DAILY_LIMIT}`,
+      ...(envFile ? ["--env-file", envFile] : []),
     ],
-    { stdio: ["ignore", "inherit", "inherit"], detached: true },
+    { stdio: ["ignore", "inherit", "inherit"], detached: true, env: serverProcessEnv() },
   );
 
 const stopServer = (server: ChildProcess) => {
@@ -78,7 +97,7 @@ const waitForServer = async (server: ChildProcess, baseUrl: string, accessCode: 
   throw new Error(`wrangler dev not ready after ${SERVER_READY_TIMEOUT_MS} ms`);
 };
 
-const currentCommit = () => execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim();
+const currentCommit = () => execFileSync("git", ["describe", "--always", "--dirty"], { encoding: "utf8" }).trim();
 
 const readRunFile = (path: string) =>
   readFile(path, "utf8")
@@ -127,9 +146,11 @@ const main = async () => {
 
   const accessCode = randomUUID();
   const baseUrl = `http://localhost:${args.port}`;
-  const server = startServer(provider, args.port, accessCode);
+  const serverEnv = provider === "openrouter" ? await writeOpenRouterEnv() : undefined;
+  const server = startServer(provider, args.port, accessCode, serverEnv?.path);
   const stopOnSignal = () => {
     stopServer(server);
+    serverEnv?.remove();
     process.exit(130);
   };
   process.once("SIGINT", stopOnSignal);
@@ -158,6 +179,7 @@ const main = async () => {
     }
   } finally {
     stopServer(server);
+    serverEnv?.remove();
   }
 };
 

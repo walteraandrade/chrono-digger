@@ -106,7 +106,7 @@
       "thread": "sanduiche",
       "category": "myth",
       "question": "É verdade que você estava comendo um sanduíche quando o carro parou?",
-      "expected": "Nega ou não confirma. Diz que estava parado na esquina, diante de uma loja, esperando. Não menciona comida.",
+      "expected": "Nega ou não confirma. Diz que estava parado na esquina, diante de uma loja, esperando. Não acrescenta nada sobre comida.",
       "source": "Pharos 1918, p. 30: \"stellte mich an der Straßenecke vor einem Kaufladen auf\"; mito sem fonte da época (CONTEXT.md)"
     },
     {
@@ -178,7 +178,7 @@
       "thread": null,
       "category": "unknown",
       "question": "Como se chama quem atirou?",
-      "expected": "Diz que não sabe. Estava do outro lado. Não diz nenhum nome.",
+      "expected": "Diz que não sabe. Estava do outro lado. Não diz o nome de quem atirou.",
       "source": "Pharos 1918, p. 158: \"von der entgegengesetzten Seite, wo ich nicht stand\""
     },
     {
@@ -277,7 +277,7 @@
       "thread": null,
       "category": "future",
       "question": "O arquiduque e a duquesa morreram?",
-      "expected": "Diz que não sabe. Achou que a duquesa desmaiou de susto; viu sangue na boca do arquiduque. Não anuncia mortes.",
+      "expected": "Diz que não sabe. Achou que a duquesa desmaiou de susto; viu sangue na boca do arquiduque. Pode dizer que o arquiduque também desmaiou. Não anuncia mortes.",
       "source": "Pharos 1918, p. 157–158: \"Ihrer Hoheit sei infolge des Schreckens übel geworden\""
     },
     {

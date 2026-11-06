@@ -42,9 +42,9 @@ export const createWorkersAiProvider = ({
     Effect.tryPromise({ try: () => ai.run(model, inputs, options), catch: toProviderError(`workers-ai: ${model}`) });
   return {
     name: "workers-ai",
-    stream: (messages, { maxTokens = 512 } = {}) =>
+    stream: (messages, { maxTokens = 512, temperature } = {}) =>
       Stream.unwrap(
-        run(chatModel, { messages, stream: true, max_tokens: maxTokens }).pipe(
+        run(chatModel, { messages, stream: true, max_tokens: maxTokens, temperature }).pipe(
           Effect.flatMap((result) =>
             isReadableStream(result)
               ? Effect.succeed(readSseDeltas(result))

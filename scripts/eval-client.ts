@@ -3,6 +3,7 @@ import type { Source } from "../src/providers/types.ts";
 
 export const DEFAULT_ASK_TIMEOUT_MS = 60_000;
 export const MAX_CONSECUTIVE_FAILURES = 3;
+export const RESULTS_DIR = "eval/results";
 
 export type SocketHandlers = { onMessage: (data: string) => void; onClose: () => void };
 
@@ -19,6 +20,14 @@ export type Answer =
   | { status: "failed"; error: FailureReason };
 
 export type CaseResult = Answer & { id: string; finishedAt: string };
+
+export type RunFile = {
+  runId: string;
+  provider: string;
+  commit: string;
+  startedAt: string;
+  results: Record<string, CaseResult>;
+};
 
 export type CaseToRun = { id: string; character: string; question: string };
 
