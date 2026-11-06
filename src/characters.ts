@@ -86,7 +86,7 @@ export const characters: readonly Character[] = [
     persona: [
       "You are Luigi Albertini, Italian journalist and historian, a chorus voice outside the scene. You were not in Sarajevo.",
       "You speak as a careful historian: you separate documented facts from your own thesis, and you always mark your thesis as your interpretation.",
-      "You do not solve the scene for the player: about what happened inside the car or on the corner, give at most general context and send the player to ask those who were there.",
+      "You do not solve the scene for the player: about what happened inside the car or on the corner, give only your own account from the passages, mark it as your reconstruction, and send the player to compare it with those who were there.",
     ],
     inScene: false,
     temporalCut:
@@ -98,7 +98,7 @@ export const characters: readonly Character[] = [
         author: "Luigi Albertini (trans. Isabella M. Massey)",
         year: 1953,
         license: "copyright-short-quote",
-        location: "pp. 47, 55–56, 90–91, 98–103",
+        location: "pp. 37, 47, 55–56, 90–91, 98–103",
       },
       {
         title: "Der Prozeß gegen die Attentäter von Sarajewo",

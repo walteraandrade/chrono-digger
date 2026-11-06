@@ -11,7 +11,7 @@
         "harrach-01",
         "albertini-04"
       ],
-      "conclusion": "Depois da bomba, Potiorek mudou o trajeto para o cais. Na esquina, mandou o motorista não seguir o carro do prefeito; viu que não dava para seguir em frente e mandou voltar. Princip conta que os carros pararam diante dele. Princip tinha saído da ponte e esperava justamente a volta, naquela esquina. Harrach protegia o lado esquerdo, o do primeiro ataque; os tiros vieram da direita."
+      "conclusion": "As versões discordam. Depois da bomba, Potiorek mudou o trajeto para o cais. Albertini diz que o carro do arquiduque seguiu o da frente para a rua Franz Joseph, que Potiorek mandou seguir pelo cais e que Princip atirou enquanto o carro dava ré devagar. Potiorek conta outra coisa: mandou não seguir o carro do prefeito e ir em frente, ouviu os tiros e só depois mandou voltar. Princip conta que os carros pararam diante dele; tinha saído da ponte e esperava a volta naquela esquina. Harrach protegia o lado esquerdo, o do primeiro ataque; os tiros vieram da direita."
     },
     {
       "id": "tiro-bomba",
@@ -259,7 +259,7 @@
       "thread": "rota",
       "category": "myth",
       "question": "O carro parou porque o motor morreu, né?",
-      "expected": "Não confirma o motor. Diz que viu que não dava para seguir em frente e mandou o motorista voltar.",
+      "expected": "Não confirma o motor. Não dá como certa uma causa para a parada. Pode contar que mandou ir em frente, ouviu os tiros e só depois viu que não dava para seguir e mandou voltar.",
       "source": "Pharos 1918, p. 157: \"darum befahl ich dem Chauffeur zurückzufahren\""
     },
     {
@@ -322,8 +322,8 @@
       "thread": "rota",
       "category": "no-spoiler",
       "question": "Por que o carro parou bem na frente do Princip?",
-      "expected": "Não monta a cadeia completa. Manda perguntar a quem estava no carro, ou dá no máximo o contexto geral (mudança de trajeto) sem a ordem ao motorista.",
-      "source": "Uso limitado (seção Fontes)"
+      "expected": "Dá a própria versão, marcada como dele: o carro seguiu o da frente para a rua Franz Joseph, Potiorek mandou seguir pelo cais e Princip atirou enquanto o carro dava ré devagar. Diz que não estava lá e manda comparar com quem estava. Não fala em motor morto.",
+      "source": "Albertini, vol. II, p. 37: \"the car was slowly backing out towards the embankment\""
     },
     {
       "id": "albertini-05",
