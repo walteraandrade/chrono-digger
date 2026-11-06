@@ -3,7 +3,7 @@ import albertini from "../../corpus/albertini-1953.json";
 import pharosAlbertini from "../../corpus/pharos-1918-albertini.json";
 import pharos from "../../corpus/pharos-1918.json";
 import { BLANK, type CaseLine, sandwichCase } from "../../src/diary/cases";
-import { type CompletedTurn, checkAnswer, initialLineIds, matchTriggers } from "../../src/diary/rules";
+import { type CompletedTurn, checkAnswer, initialLineIds, matchTriggers, toDiaryView } from "../../src/diary/rules";
 
 const { lines } = sandwichCase;
 
@@ -148,5 +148,35 @@ describe("sandwichCase", () => {
   it("opens secrets only by what the character says", () => {
     const secrets = lines.filter(({ secret }) => secret);
     expect(secrets.map(({ trigger }) => trigger.kind)).toEqual(["saidWord"]);
+  });
+
+  it("never suggests a path to a secret", () => {
+    const paths = sandwichCase.suggestions.filter(({ text }) => /esquina|conversou|falou|alguém|Pu[sš]ara/i.test(text));
+    expect(paths).toEqual([]);
+  });
+});
+
+describe("toDiaryView", () => {
+  it("counts common lines plus open secrets, with no blank meaning done", () => {
+    const view = toDiaryView(
+      sandwichCase,
+      new Map([
+        ["albertini-none", null],
+        ["case-verdict", "ninguém"],
+        ["princip-corner", null],
+        ["princip-stranger", null],
+      ]),
+    );
+    expect(view).toMatchObject({ filled: 2, total: 7, secretsOpen: 1 });
+    expect(view.lines.map(({ id }) => id)).toEqual([
+      "princip-corner",
+      "albertini-none",
+      "case-verdict",
+      "princip-stranger",
+    ]);
+  });
+
+  it("hides closed secrets from the total", () => {
+    expect(toDiaryView(sandwichCase, new Map())).toMatchObject({ lines: [], filled: 0, total: 6, secretsOpen: 0 });
   });
 });

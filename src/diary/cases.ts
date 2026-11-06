@@ -16,10 +16,13 @@ export type CaseLine = {
   trigger: Trigger;
 };
 
+export type SuggestedQuestion = { characterId: string; text: string };
+
 export type DiaryCase = {
   id: string;
   question: string;
   lines: readonly CaseLine[];
+  suggestions: readonly SuggestedQuestion[];
 };
 
 export const sandwichCase: DiaryCase = {
@@ -84,5 +87,10 @@ export const sandwichCase: DiaryCase = {
       secret: true,
       trigger: { kind: "saidWord", terms: ["Pušara"] },
     },
+  ],
+  suggestions: [
+    { characterId: "princip", text: "Onde você estava quando o carro parou?" },
+    { characterId: "harrach", text: "Onde você estava no carro?" },
+    { characterId: "albertini", text: "Essa história do sanduíche é verdade?" },
   ],
 };

@@ -1,5 +1,6 @@
 import { SELF } from "cloudflare:test";
 import type { ErrorType, HistoryEntry, ServerMessage } from "../src/contract";
+import type { DiaryView } from "../src/diary/rules";
 import type { Source } from "../src/turn";
 import { TEST_ACCESS_CODE } from "./constants";
 
@@ -12,6 +13,7 @@ export type Turn = {
   chunks: string[];
   text: string;
   sources: Source[] | undefined;
+  diary: DiaryView | undefined;
   ended: boolean;
   error: ErrorType | undefined;
   order: string[];
@@ -66,12 +68,21 @@ export const connect = async ({
   const send = (payload: unknown) => ws.send(typeof payload === "string" ? payload : JSON.stringify(payload));
 
   const readTurn = async (): Promise<Turn> => {
-    const turn: Turn = { chunks: [], text: "", sources: undefined, ended: false, error: undefined, order: [] };
+    const turn: Turn = {
+      chunks: [],
+      text: "",
+      sources: undefined,
+      diary: undefined,
+      ended: false,
+      error: undefined,
+      order: [],
+    };
     while (true) {
       const message = await next();
       turn.order.push(message.type);
       if (message.type === "chunk") turn.chunks.push(message.text);
       if (message.type === "sources") turn.sources = message.sources;
+      if (message.type === "diary") turn.diary = message;
       if (message.type === "end") turn.ended = true;
       if (message.type === "error") turn.error = message.error;
       if (message.type === "end" || message.type === "error" || message.type === "closed")
@@ -90,11 +101,18 @@ export const connect = async ({
     return message.messages;
   };
 
-  return { ws, next, send, ask, readTurn, history, close: () => ws.close(1000) };
+  const diary = async (): Promise<DiaryView> => {
+    const message = await next();
+    if (message.type !== "diary") throw new Error(`expected diary, got ${message.type}`);
+    return message;
+  };
+
+  return { ws, next, send, ask, readTurn, history, diary, close: () => ws.close(1000) };
 };
 
 export const openChat = async (characterId: string, playerId: string) => {
   const chat = await connect({ characterId, playerId });
   const history = await chat.history();
-  return { ...chat, initialHistory: history };
+  const diary = await chat.diary();
+  return { ...chat, initialHistory: history, initialDiary: diary };
 };

@@ -19,7 +19,7 @@ export const fixtureChunks: readonly Chunk[] = [
   },
   {
     ...pharos,
-    id: "princip-p30",
+    id: "pharos-1918-princip-16",
     characterId: "princip",
     location: "p. 30",
     passage: "stellte mich an der Straßenecke vor einem Kaufladen auf",

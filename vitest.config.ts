@@ -20,6 +20,7 @@ const durableObjects = {
   CHARACTER_SESSION: { className: "CharacterSession", useSQLite: true },
   PLAYER_QUOTA: { className: "PlayerQuota", useSQLite: true },
   GLOBAL_QUOTA: { className: "GlobalQuota", useSQLite: true },
+  PLAYER_DIARY: { className: "PlayerDiary", useSQLite: true },
 };
 
 const FAKE_PROVIDERS = { CHAT_PROVIDER: "fake", EMBEDDING_PROVIDER: "fake", RETRIEVAL_INDEX: "memory" };

@@ -1,10 +1,29 @@
-import type { CaseLine, Trigger } from "./cases";
+import type { CaseLine, DiaryCase, SuggestedQuestion, Trigger } from "./cases";
 
 export type CompletedTurn = {
   characterId: string;
   question: string;
   answer: string;
   chunkIds: readonly string[];
+};
+
+export type Progress = ReadonlyMap<string, string | null>;
+
+export type DiaryLine = {
+  id: string;
+  owner: string;
+  text: string;
+  blank?: { filled: boolean; word?: string };
+  secret: boolean;
+};
+
+export type DiaryView = {
+  caseQuestion: string;
+  lines: DiaryLine[];
+  filled: number;
+  total: number;
+  secretsOpen: number;
+  suggestions: SuggestedQuestion[];
 };
 
 const toWords = (text: string): readonly string[] =>
@@ -45,7 +64,31 @@ export const initialLineIds = (lines: readonly CaseLine[]) =>
 
 const canonical = (text: string) => toWords(text).join(" ");
 
-export const checkAnswer = ({ accepted = [] }: CaseLine, word: string) => {
+export const findAcceptedAnswer = ({ accepted = [] }: CaseLine, word: string) => {
   const answer = canonical(word);
-  return answer !== "" && accepted.some((option) => canonical(option) === answer);
+  return answer === "" ? undefined : accepted.find((option) => canonical(option) === answer);
+};
+
+export const checkAnswer = (line: CaseLine, word: string) => findAcceptedAnswer(line, word) !== undefined;
+
+const toDiaryLine = ({ id, owner, text, accepted, secret }: CaseLine, word: string | null): DiaryLine => ({
+  id,
+  owner,
+  text,
+  secret,
+  ...(accepted && { blank: word === null ? { filled: false } : { filled: true, word } }),
+});
+
+export const toDiaryView = ({ question, lines, suggestions }: DiaryCase, progress: Progress): DiaryView => {
+  const open = lines.filter(({ id }) => progress.has(id));
+  const isDone = ({ id, accepted }: CaseLine) => !accepted || progress.get(id) != null;
+  const secretsOpen = open.filter(({ secret }) => secret).length;
+  return {
+    caseQuestion: question,
+    lines: open.map((line) => toDiaryLine(line, progress.get(line.id) ?? null)),
+    filled: open.filter(isDone).length,
+    total: lines.filter(({ secret }) => !secret).length + secretsOpen,
+    secretsOpen,
+    suggestions: [...suggestions],
+  };
 };

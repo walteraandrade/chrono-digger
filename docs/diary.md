@@ -1,6 +1,6 @@
 # Diário de investigação
 
-Status: proposta de 2026-11-06. Só as regras estão implementadas (`src/diary/`). Servidor e tela ainda não.
+Status: proposta de 2026-11-06. Regras e servidor estão implementados (`src/diary/`). A tela ainda não.
 
 ## Problema
 
@@ -145,30 +145,7 @@ Por que um objeto por pessoa, e não guardar em cada `CharacterSession`:
 
 ## Contrato WebSocket
 
-Entra em [ws-contract.md](ws-contract.md) na implementação.
-
-```ts
-type DiaryLine = {
-  id: string;
-  owner: string;
-  text: string;
-  blank?: { filled: boolean; word?: string };
-  secret: boolean;
-};
-
-type ServerMessage =
-  | /* existing messages */
-  | { type: "diary"; caseQuestion: string; lines: DiaryLine[]; filled: number; total: number; secretsOpen: number }
-  | { type: "fillResult"; lineId: string; correct: boolean };
-
-type ClientMessage =
-  | { type: "ask"; text: string }
-  | { type: "fill"; lineId: string; word: string };
-```
-
-- `diary` chega ao conectar e sempre que algo mudar.
-- Linha fechada não é enviada. `word` só é enviada depois do acerto. `text` traz a lacuna em branco.
-- `fill` em linha fechada ou inexistente devolve `bad_request`.
+Está em [ws-contract.md](ws-contract.md). As mensagens novas são `diary`, `fillResult` e `fill`, mais o erro `diary_failure`.
 
 ## Perguntas sugeridas
 
@@ -184,8 +161,8 @@ Regras:
 
 - Usar só perguntas já medidas. Toda sugestão nova entra no eval do diário.
 - Nunca sugerir caminho de segredo. Nada de sugestão que fale da esquina ou de conversa com alguém.
-- A sugestão some depois de usada.
-- Texto e personagem podem ir para a tela. As respostas aceitas, não.
+- A sugestão some depois de usada. A tela decide isso olhando o histórico da conversa, então o servidor não guarda nada a mais, e uma pergunta que falhou continua sugerida.
+- Texto e personagem vão na mensagem `diary`. As respostas aceitas, não.
 
 Com essas 3 perguntas, a pessoa abre todas as linhas comuns e pode preencher o caso. O segredo fica para quem seguir a pista da esquina. Preço: dá para terminar as linhas comuns só clicando, e digitar segue sendo opcional. O teste com pessoas mostra se isso esvazia a investigação.
 
@@ -227,7 +204,7 @@ Meta inicial, a rever depois de medir:
 
 1. **Medir:** feito (ver Medição). Falta só testar perguntas fora do assunto, junto do eval do diário.
 2. **Regras:** feito (`src/diary/`, testes em `test/diary/`).
-3. **Servidor:** `PlayerDiary` e contrato.
+3. **Servidor:** feito (`src/diary/player-diary.ts`, testes em `test/seam/diary.test.ts`). Testado só com provedores falsos.
 4. **Tela:** painel do diário.
 5. **Eval do diário:** script e metas.
 6. **Teste com pessoas:** 3 a 5 pessoas, olhando se elas entendem o objetivo.

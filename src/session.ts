@@ -1,11 +1,12 @@
 import { DurableObject } from "cloudflare:workers";
 import * as Effect from "effect/Effect";
-import { findCharacter } from "./characters";
+import { type Character, findCharacter } from "./characters";
 import { type ErrorType, type HistoryEntry, type ServerMessage, errorMessage, parseClientMessage } from "./contract";
+import type { CompletedTurn } from "./diary/rules";
 import type { Env } from "./env";
 import type { HistoryMessage } from "./prompt";
 import { type ProviderRegistry, selectProviders } from "./providers/registry";
-import { consumeQuota } from "./quota";
+import { type QuotaGrant, consumeQuota } from "./quota";
 import { type Source, parseMinSourceScore, parseTurnTimeoutMs, runCharacterTurn } from "./turn";
 
 export const PLAYER_HEADER = "x-player-id";
@@ -72,12 +73,48 @@ export const createCharacterSession = (registry: ProviderRegistry) =>
       this.ctx.acceptWebSocket(server);
       server.serializeAttachment({ playerId, characterId } satisfies Attachment);
       send(server, { type: "history", messages: this.readHistory() });
+      await this.sendDiary(server, playerId);
       return new Response(null, { status: 101, webSocket: client });
+    }
+
+    private diary(playerId: string) {
+      return this.env.PLAYER_DIARY.getByName(playerId);
+    }
+
+    private async sendDiary(ws: WebSocket, playerId: string) {
+      try {
+        send(ws, { type: "diary", ...(await this.diary(playerId).view()) });
+      } catch (error) {
+        console.error("diary read failed", { error: String(error) });
+      }
+    }
+
+    private async recordInDiary(ws: WebSocket, playerId: string, turn: CompletedTurn) {
+      try {
+        const view = await this.diary(playerId).recordTurn(turn);
+        if (view) send(ws, { type: "diary", ...view });
+      } catch (error) {
+        console.error("diary update failed", { characterId: turn.characterId, error: String(error) });
+      }
+    }
+
+    private async fill(ws: WebSocket, lineId: string, word: string) {
+      const { playerId } = ws.deserializeAttachment() as Attachment;
+      try {
+        const outcome = await this.diary(playerId).fill(lineId, word);
+        if (outcome.kind === "unavailable") return sendError(ws, "bad_request");
+        send(ws, { type: "fillResult", lineId, correct: outcome.correct });
+        if (outcome.diary) send(ws, { type: "diary", ...outcome.diary });
+      } catch (error) {
+        console.error("diary fill failed", { lineId, error: String(error) });
+        sendError(ws, "diary_failure");
+      }
     }
 
     async webSocketMessage(ws: WebSocket, raw: string | ArrayBuffer) {
       const message = parseClientMessage(raw);
       if (!message) return sendError(ws, "bad_request");
+      if (message.type === "fill") return this.fill(ws, message.lineId, message.word);
       if (this.busy) return sendError(ws, "busy");
       this.busy = true;
       try {
@@ -93,6 +130,24 @@ export const createCharacterSession = (registry: ProviderRegistry) =>
       if (!character) return sendError(ws, "unknown_character");
       const quota = await consumeQuota(this.env, playerId);
       if (!quota.allowed) return sendError(ws, quota.error);
+      const completed = await this.runTurn(ws, character, question, quota);
+      if (!completed) return;
+      await this.recordInDiary(ws, playerId, {
+        characterId,
+        question,
+        answer: completed.answer,
+        chunkIds: completed.sources.map(({ id }) => id),
+      });
+      send(ws, { type: "end" });
+    }
+
+    private async runTurn(
+      ws: WebSocket,
+      character: Character,
+      question: string,
+      quota: Extract<QuotaGrant, { allowed: true }>,
+    ) {
+      const characterId = character.id;
       try {
         const history: HistoryMessage[] = this.readHistory().map(({ role, text }) => ({
           role,
@@ -115,13 +170,14 @@ export const createCharacterSession = (registry: ProviderRegistry) =>
         );
         this.appendTurn(question, answer, sources);
         send(ws, { type: "sources", sources });
-        send(ws, { type: "end" });
+        return { answer, sources };
       } catch (error) {
         console.error("character turn failed", { characterId, error: String(error) });
         await quota.refund().catch((refundError: unknown) =>
           console.error("quota refund failed", { characterId, error: String(refundError) }),
         );
         sendError(ws, "provider_failure");
+        return undefined;
       }
     }
 
