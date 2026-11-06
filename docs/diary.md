@@ -42,7 +42,35 @@ Um diário que se preenche enquanto a pessoa conversa, como um álbum de figurin
 
 ★ Segredo: a tela não mostra que ele existe antes de abrir. O total só conta segredos já abertos, com um ★ à parte.
 
-Esta tabela é um rascunho. Falta rever cada linha contra a fonte e medir o eval do diário.
+Esta tabela é um rascunho. Falta rever cada linha contra a fonte.
+
+## Medição
+
+Em 2026-11-06, 6 perguntas em 3 rodadas no OpenRouter (Llama 3.3 70B), sem juiz, com o índice de 47 vetores da branch `feat/albertini-rota-source`. Respostas em `eval/results/diary-*.json`, fora do git.
+
+| Pergunta | Personagem | Trecho esperado | Palavras |
+|---|---|---|---|
+| Você estava comendo um sanduíche quando o carro parou? | Princip | 3/3 `pharos-1918-princip-16` | "esquina" 3/3; "armazém" 3/3; "loja" 0/3 |
+| Onde você estava no carro? | Harrach | 3/3 `pharos-1918-harrach-01` e `-02` | "estribo" 3/3; "oposto" 3/3 |
+| De que lado vieram os tiros? | Harrach | 3/3 `pharos-1918-harrach-02` | "oposto" 3/3 |
+| O Princip comeu um sanduíche antes de atirar? | Albertini | sem trecho | "sanduíche" 3/3, sem confirmar |
+| Alguém falou com você enquanto você esperava na esquina? | Princip | 3/3 `pharos-1918-princip-16` | "Pušara" 3/3 |
+| Você conversou com alguém antes de o carro chegar? | Princip | 0/3 `pharos-1918-princip-16` | "Pušara" 0/3; cita o filho do promotor Svara 3/3 |
+
+O que isso mostra:
+
+- **Prompt:** as palavras apareceram sem palavras-chave no prompt. Essa mudança fica fora por enquanto.
+- **"Loja":** o modelo disse "armazém" nas 3 rodadas. Sem sinônimos, a lacuna seria injusta.
+- **Segredo:** Pušara só aparece quando a pergunta fala da esquina. Isso cria um caminho: a linha da esquina dá a pista para o segredo.
+- **Outro segredo possível:** o filho do promotor Svara está em `pharos-1918-princip-15`. A resposta é fiel a esse trecho.
+- **Mínimo:** 4 perguntas abrem todas as linhas: uma a Harrach, uma a Albertini e duas a Princip. Cabe no limite de 10.
+
+Limites da medição:
+
+- É uma redação de pergunta por linha. Outra redação muda o resultado: em `openrouter-3`, "É verdade que você estava comendo um sanduíche quando o carro parou?" não trouxe "esquina" nem "loja".
+- As 3 rodadas não são independentes o bastante. Com `temperature` 0.2, várias respostas saíram iguais; `harrach-where` e `princip-secret-a` saíram idênticas nas 3.
+- Foi no OpenRouter. O provedor padrão, Workers AI, não foi medido.
+- Ninguém real jogou.
 
 ## Gatilhos
 
@@ -135,16 +163,17 @@ Meta inicial, a rever depois de medir:
 
 | Risco | Evidência | O que fazer |
 |---|---|---|
-| O modelo não diz a palavra | Em `princip-07`, `openrouter-3` não disse "esquina" nem "loja"; `openrouter-4` disse "esquina" e "armazém" | Aceitar sinônimos. Se o eval ficar abaixo da meta, passar as palavras-chave do trecho buscado ao prompt |
-| Palavra-chave no prompt soa falsa ou entrega segredo | Não testado | Medir. Segredos nunca entram na lista |
-| O segredo nunca aparece | Não testado se Princip diz "Pušara" quando perguntam | Medir antes de manter o segredo |
+| O modelo não diz a palavra | Depende da redação: ver Medição | Aceitar sinônimos. Testar com várias redações. Se ficar abaixo da meta, passar as palavras-chave do trecho buscado ao prompt |
+| Palavra-chave no prompt soa falsa ou entrega segredo | Não testado | Medir, se for preciso usar. Segredos nunca entram na lista |
+| O segredo fica difícil demais | Uma pergunta abriu 3/3 e outra 0/3 | Dar a pista na linha da esquina |
+| O Workers AI se comporta diferente | Não medido | Repetir a medição antes de testar com pessoas |
 | Vira caça-palavras | Hipótese | Observar pessoas jogando |
 | Caso curto demais | São só 7 linhas | Decidir depois do teste; o próximo caso seria `tiro-bomba` |
 | Limite de 10 perguntas frustra | Cada tentativa de segredo gasta uma pergunta | Manter o diário bem abaixo do limite |
 
 ## Ordem de trabalho
 
-1. **Medir:** rodar perguntas reais do caso e conferir palavras e segredo, antes de escrever código de jogo.
+1. **Medir:** feito no OpenRouter (ver Medição). Falta o Workers AI e outras redações.
 2. **Regras:** `src/diary/` com testes.
 3. **Servidor:** `PlayerDiary` e contrato.
 4. **Tela:** painel do diário.
