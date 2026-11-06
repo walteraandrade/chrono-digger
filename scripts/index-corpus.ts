@@ -1,4 +1,5 @@
 import { parseArgs } from "node:util";
+import * as Effect from "effect/Effect";
 import { chunkToMetadata } from "../src/corpus.ts";
 import { createOpenRouterProvider, gatewayAuthHeaders } from "../src/providers/openrouter.ts";
 import type { Chunk, EmbeddingProvider } from "../src/providers/types.ts";
@@ -81,7 +82,7 @@ const batches = <T>(items: readonly T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, (index + 1) * size));
 
 const indexBatch = async (embeddings: EmbeddingProvider, chunks: Chunk[]) => {
-  const vectors = await embeddings.embed(chunks.map((chunk) => chunk.passage));
+  const vectors = await Effect.runPromise(embeddings.embed(chunks.map((chunk) => chunk.passage)));
   if (vectors.length !== chunks.length) throw new Error(`expected ${chunks.length} vectors, got ${vectors.length}`);
   await upsert(
     chunks.map((chunk, index) => ({ id: chunk.id, values: vectors[index] ?? [], metadata: chunkToMetadata(chunk) })),

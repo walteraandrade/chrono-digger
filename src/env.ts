@@ -2,6 +2,7 @@ import type { GlobalQuota, PlayerQuota } from "./quota";
 
 export interface Env {
   ACCESS_CODE: string;
+  ACCESS_CODE_DISABLED?: string;
   DAILY_LIMIT?: string;
   GLOBAL_DAILY_LIMIT?: string;
   MIN_SOURCE_SCORE?: string;

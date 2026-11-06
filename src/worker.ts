@@ -1,4 +1,4 @@
-import { isValidAccessCode, isValidPlayerId } from "./access";
+import { hasAccess, isValidPlayerId } from "./access";
 import { characters, findCharacter, toPublicCharacter } from "./characters";
 import { CLOSE_CODES, type ErrorType, errorMessage } from "./contract";
 import type { Env } from "./env";
@@ -22,7 +22,7 @@ const rejectSocket = (error: ErrorType) => {
 };
 
 const listCharacters = async (request: Request, env: Env) =>
-  (await isValidAccessCode(env.ACCESS_CODE, request.headers.get(ACCESS_CODE_HEADER)))
+  (await hasAccess(request, env, request.headers.get(ACCESS_CODE_HEADER)))
     ? json({ characters: characters.map(toPublicCharacter) })
     : httpError("bad_access_code", 401);
 
@@ -30,7 +30,7 @@ const openSession = async (request: Request, env: Env, characterId: string) => {
   if (request.headers.get("upgrade")?.toLowerCase() !== "websocket")
     return httpError("bad_request", 426);
   const params = new URL(request.url).searchParams;
-  if (!(await isValidAccessCode(env.ACCESS_CODE, params.get("accessCode"))))
+  if (!(await hasAccess(request, env, params.get("accessCode"))))
     return rejectSocket("bad_access_code");
   if (!findCharacter(characterId)) return rejectSocket("unknown_character");
   const playerId = params.get("playerId");

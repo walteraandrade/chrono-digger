@@ -52,6 +52,7 @@ export default defineConfig({
       { test: { name: "corpus", include: ["scripts/**/*.test.ts"], environment: "node" } },
       project("seam", FAKE_PROVIDERS),
       project("global-quota", { ...FAKE_PROVIDERS, GLOBAL_DAILY_LIMIT: String(TEST_GLOBAL_DAILY_LIMIT) }),
+      project("dev-access", { ...FAKE_PROVIDERS, ACCESS_CODE_DISABLED: "true" }),
       project(
         "openrouter",
         {

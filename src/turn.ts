@@ -1,3 +1,5 @@
+import * as Effect from "effect/Effect";
+import * as Stream from "effect/Stream";
 import type { Character } from "./characters";
 import { type HistoryMessage, buildPrompt } from "./prompt";
 import type { Providers } from "./providers/registry";
@@ -23,21 +25,6 @@ export const parseTurnTimeoutMs = (value: string | undefined) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TURN_TIMEOUT_MS;
 };
 
-const withDeadline = <T>(timeoutMs: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> => {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  const deadline = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => {
-      const error = new ProviderError(`turn exceeded ${timeoutMs}ms`);
-      controller.abort(error);
-      reject(error);
-    }, timeoutMs);
-  });
-  const work = run(controller.signal);
-  work.catch(() => undefined);
-  return Promise.race([work, deadline]).finally(() => clearTimeout(timer));
-};
-
 export const runCharacterTurn = ({
   character,
   question,
@@ -54,22 +41,25 @@ export const runCharacterTurn = ({
   minScore: number;
   timeoutMs: number;
   onChunk: (text: string) => void;
-}): Promise<TurnResult> =>
-  withDeadline(timeoutMs, async (signal) => {
-    const [vector] = await embeddings.embed([question]);
-    signal.throwIfAborted();
-    if (!vector) throw new ProviderError(`${embeddings.name}: no embedding returned`);
-    const scored = await index.search(vector, { characterId: character.id, topK: TOP_K });
-    signal.throwIfAborted();
+}): Effect.Effect<TurnResult, ProviderError> =>
+  Effect.gen(function* () {
+    const [vector] = yield* embeddings.embed([question]);
+    if (!vector) return yield* new ProviderError({ message: `${embeddings.name}: no embedding returned` });
+    const scored = yield* index.search(vector, { characterId: character.id, topK: TOP_K });
     const chunks = scored.filter(({ score }) => score >= minScore).map(({ score: _score, ...chunk }) => chunk);
     const messages = buildPrompt({ character, chunks, history, question });
-    let answer = "";
-    for await (const piece of chat.stream(messages, { signal })) {
-      signal.throwIfAborted();
-      answer += piece;
-      onChunk(piece);
-    }
-    signal.throwIfAborted();
-    if (!answer.trim()) throw new ProviderError(`${chat.name}: empty answer`);
+    const answer = yield* chat.stream(messages).pipe(
+      Stream.tap((piece) => Effect.sync(() => onChunk(piece))),
+      Stream.runFold(
+        () => "",
+        (text, piece) => text + piece,
+      ),
+    );
+    if (!answer.trim()) return yield* new ProviderError({ message: `${chat.name}: empty answer` });
     return { answer, sources: chunks.map(toSource) };
-  });
+  }).pipe(
+    Effect.timeoutOrElse({
+      duration: timeoutMs,
+      orElse: () => Effect.fail(new ProviderError({ message: `turn exceeded ${timeoutMs}ms` })),
+    }),
+  );

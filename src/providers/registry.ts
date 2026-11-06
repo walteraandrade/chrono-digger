@@ -1,6 +1,13 @@
+import * as Effect from "effect/Effect";
 import type { Env } from "../env";
 import { createOpenRouterProvider } from "./openrouter";
-import { type ChatProvider, type EmbeddingProvider, ProviderError, type RetrievalIndex } from "./types";
+import {
+  type ChatProvider,
+  type EmbeddingProvider,
+  ProviderError,
+  type RetrievalIndex,
+  toProviderError,
+} from "./types";
 import { type VectorQueryable, createVectorizeIndex } from "./vectorize";
 import { type AiRunner, createWorkersAiProvider } from "./workers-ai";
 
@@ -23,7 +30,7 @@ export const DEFAULT_EMBEDDING_PROVIDER = "workers-ai";
 export const DEFAULT_RETRIEVAL_INDEX = "vectorize";
 
 const requireBinding = <T>(binding: T | undefined, name: string): T => {
-  if (!binding) throw new ProviderError(`missing binding ${name}`);
+  if (!binding) throw new ProviderError({ message: `missing binding ${name}` });
   return binding;
 };
 
@@ -56,17 +63,21 @@ export const defaultRegistry: ProviderRegistry = {
 
 const pick = <T>(factories: Record<string, Factory<T>>, key: string, kind: string, env: Env): T => {
   const factory = factories[key];
-  if (!factory) throw new ProviderError(`unknown ${kind} "${key}"`);
+  if (!factory) throw new ProviderError({ message: `unknown ${kind} "${key}"` });
   return factory(env);
 };
 
-export const selectProviders = (registry: ProviderRegistry, env: Env): Providers => ({
-  chat: pick(registry.chat, env.CHAT_PROVIDER || DEFAULT_CHAT_PROVIDER, "chat provider", env),
-  embeddings: pick(
-    registry.embeddings,
-    env.EMBEDDING_PROVIDER || DEFAULT_EMBEDDING_PROVIDER,
-    "embedding provider",
-    env,
-  ),
-  index: pick(registry.index, env.RETRIEVAL_INDEX || DEFAULT_RETRIEVAL_INDEX, "retrieval index", env),
-});
+export const selectProviders = (registry: ProviderRegistry, env: Env): Effect.Effect<Providers, ProviderError> =>
+  Effect.try({
+    try: () => ({
+      chat: pick(registry.chat, env.CHAT_PROVIDER || DEFAULT_CHAT_PROVIDER, "chat provider", env),
+      embeddings: pick(
+        registry.embeddings,
+        env.EMBEDDING_PROVIDER || DEFAULT_EMBEDDING_PROVIDER,
+        "embedding provider",
+        env,
+      ),
+      index: pick(registry.index, env.RETRIEVAL_INDEX || DEFAULT_RETRIEVAL_INDEX, "retrieval index", env),
+    }),
+    catch: toProviderError("provider selection"),
+  });
