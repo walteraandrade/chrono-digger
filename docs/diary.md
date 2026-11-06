@@ -69,8 +69,41 @@ Limites da medição:
 
 - É uma redação de pergunta por linha. Outra redação muda o resultado: em `openrouter-3`, "É verdade que você estava comendo um sanduíche quando o carro parou?" não trouxe "esquina" nem "loja".
 - As 3 rodadas não são independentes o bastante. Com `temperature` 0.2, várias respostas saíram iguais; `harrach-where` e `princip-secret-a` saíram idênticas nas 3.
-- Foi no OpenRouter. O provedor padrão, Workers AI, não foi medido.
 - Ninguém real jogou.
+
+### Workers AI, com outras redações
+
+Também em 2026-11-06: 13 redações em 2 rodadas no Workers AI, sem falhas. Respostas em `eval/results/diary-wai-*.json`, fora do git.
+
+| Pergunta | Personagem | Trecho esperado | Palavras |
+|---|---|---|---|
+| Onde você estava quando o carro parou? | Princip | 2/2 `pharos-1918-princip-16` | "esquina" 2/2; "loja" 2/2 |
+| vc tava onde na hora? | Princip | **0/2** | **nenhuma** |
+| Você estava comendo um sanduíche quando o carro parou? | Princip | 2/2 | "esquina" 2/2; loja ou sinônimo 0/2 |
+| É verdade que você estava comendo um sanduíche? | Princip | 2/2 | "esquina" 2/2; loja ou sinônimo 0/2 |
+| Alguém falou com você enquanto você esperava na esquina? | Princip | 2/2 | "Pušara" 2/2 |
+| Quem falou com você na esquina? | Princip | 2/2 | "Pušara" 2/2 |
+| Você conversou com alguém antes de o carro chegar? | Princip | 0/2 | "Pušara" 0/2; Svara 2/2 |
+| Onde você estava no carro? | Harrach | 2/2 ambos | "estribo" 2/2; "oposto" 2/2 |
+| Por que você estava do lado de fora do carro? | Harrach | 2/2 ambos | "estribo" 2/2; "oposto" 2/2 |
+| De que lado vieram os tiros? | Harrach | 2/2 ambos | "oposto" 2/2 |
+| Você viu quem atirou? | Harrach | 2/2 ambos | "estribo" 2/2; "oposto" 2/2 |
+| O Princip comeu um sanduíche antes de atirar? | Albertini | sem trecho | não confirma, 2/2 |
+| Essa história do sanduíche é verdade? | Albertini | sem trecho | não confirma, 2/2 |
+
+O que isso acrescenta:
+
+- **Pergunta informal falha:** "vc tava onde na hora?" não buscou o trecho e não abriu nada. É o maior risco para este público.
+- **Linha pode abrir sem a palavra:** as duas perguntas sobre sanduíche abrem `princip-shop`, mas o modelo não diz a palavra. Isso pode ser bom: a lacuna vazia leva a pessoa a perguntar "onde você estava?". Só o teste com pessoas confirma.
+- **Segredo:** falar da esquina trouxe Pušara em 7/7 respostas nas duas medições. Svara só apareceu na pergunta sobre conversar antes do carro chegar.
+- **Harrach é estável demais para provar muito:** ele só tem 2 trechos, e os 2 voltaram nas 4 perguntas. É provável que quase qualquer pergunta sobre a cena abra as linhas dele. Não testei perguntas fora do assunto.
+- **Mesmo modelo:** os dois provedores usam Llama 3.3 70B, então concordar entre eles não é uma segunda opinião.
+
+Defeitos vistos nas respostas, fora do diário:
+
+- **Tempo confuso:** Princip diz que está esperando o carro e que acabou de atirar na mesma resposta. O congelamento é depois dos tiros.
+- **Lugar sem fonte:** nas duas rodadas de "Você estava comendo um sanduíche...", Princip disse "perto de um cais" em vez de "diante de uma loja".
+- **Palavra quebrada:** "passageos" apareceu em respostas de Albertini, nos dois provedores. Parece vir de "passages" no prompt.
 
 ## Gatilhos
 
@@ -166,14 +199,14 @@ Meta inicial, a rever depois de medir:
 | O modelo não diz a palavra | Depende da redação: ver Medição | Aceitar sinônimos. Testar com várias redações. Se ficar abaixo da meta, passar as palavras-chave do trecho buscado ao prompt |
 | Palavra-chave no prompt soa falsa ou entrega segredo | Não testado | Medir, se for preciso usar. Segredos nunca entram na lista |
 | O segredo fica difícil demais | Uma pergunta abriu 3/3 e outra 0/3 | Dar a pista na linha da esquina |
-| O Workers AI se comporta diferente | Não medido | Repetir a medição antes de testar com pessoas |
+| Pergunta informal não abre nada | "vc tava onde na hora?" falhou 2/2 | Decidir antes de testar com pessoas: ver Perguntas em aberto |
 | Vira caça-palavras | Hipótese | Observar pessoas jogando |
 | Caso curto demais | São só 7 linhas | Decidir depois do teste; o próximo caso seria `tiro-bomba` |
 | Limite de 10 perguntas frustra | Cada tentativa de segredo gasta uma pergunta | Manter o diário bem abaixo do limite |
 
 ## Ordem de trabalho
 
-1. **Medir:** feito no OpenRouter (ver Medição). Falta o Workers AI e outras redações.
+1. **Medir:** feito (ver Medição). Falta só testar perguntas fora do assunto, junto do eval do diário.
 2. **Regras:** `src/diary/` com testes.
 3. **Servidor:** `PlayerDiary` e contrato.
 4. **Tela:** painel do diário.
@@ -183,5 +216,6 @@ Meta inicial, a rever depois de medir:
 ## Perguntas em aberto
 
 - As linhas do caso estão certas contra a fonte?
+- Como lidar com pergunta informal? Perguntas sugeridas na tela resolvem, mas dão o caminho pronto. Reescrever a pergunta antes da busca mantém a liberdade, mas gasta mais cota e adiciona uma chamada de IA.
 - Escrever a palavra basta para a pessoa comparar versões? Só o teste com pessoas responde.
 - O que a pessoa recebe ao completar o diário, além das fontes?
