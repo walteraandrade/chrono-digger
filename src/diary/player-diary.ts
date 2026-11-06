@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import type { Env } from "../env";
 import { sandwichCase } from "./cases";
-import { type CompletedTurn, type DiaryView, findAcceptedAnswer, initialLineIds, matchTriggers, toDiaryView } from "./rules";
+import { type CompletedTurn, type DiaryView, checkAnswer, initialLineIds, matchTriggers, toDiaryView } from "./rules";
 
 export type FillOutcome =
   | { kind: "unavailable" }
@@ -45,10 +45,9 @@ export class PlayerDiary extends DurableObject<Env> {
     const line = sandwichCase.lines.find(({ id }) => id === lineId);
     const progress = this.readProgress();
     if (!line?.accepted || !progress.has(lineId)) return { kind: "unavailable" };
-    const accepted = findAcceptedAnswer(line, word);
-    if (accepted === undefined) return { kind: "checked", correct: false };
+    if (!checkAnswer(line, word)) return { kind: "checked", correct: false };
     if (progress.get(lineId) !== null) return { kind: "checked", correct: true };
-    this.ctx.storage.sql.exec("UPDATE open_lines SET word = ? WHERE id = ?", accepted, lineId);
+    this.ctx.storage.sql.exec("UPDATE open_lines SET word = ? WHERE id = ?", line.accepted[0] ?? word, lineId);
     return { kind: "checked", correct: true, diary: this.readView() };
   }
 }

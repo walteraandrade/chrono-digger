@@ -176,6 +176,19 @@ describe("toDiaryView", () => {
     ]);
   });
 
+  const commonProgress = (word: string | null) =>
+    new Map(lines.filter(({ secret }) => !secret).map(({ id, accepted }) => [id, accepted ? word : null]));
+
+  it("sends the closing only when everything open and common is done", () => {
+    expect(toDiaryView(sandwichCase, commonProgress(null)).closing).toBeUndefined();
+    expect(toDiaryView(sandwichCase, commonProgress("x")).closing).toEqual(sandwichCase.closing);
+  });
+
+  it("waits for an open secret before the closing", () => {
+    const progress = new Map([...commonProgress("x"), ["princip-stranger", null]]);
+    expect(toDiaryView(sandwichCase, progress).closing).toBeUndefined();
+  });
+
   it("hides closed secrets from the total", () => {
     expect(toDiaryView(sandwichCase, new Map())).toMatchObject({ lines: [], filled: 0, total: 6, secretsOpen: 0 });
   });

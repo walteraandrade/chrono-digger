@@ -24,6 +24,7 @@ export type DiaryView = {
   total: number;
   secretsOpen: number;
   suggestions: SuggestedQuestion[];
+  closing?: { text: string; references: string[] };
 };
 
 const toWords = (text: string): readonly string[] =>
@@ -64,12 +65,10 @@ export const initialLineIds = (lines: readonly CaseLine[]) =>
 
 const canonical = (text: string) => toWords(text).join(" ");
 
-export const findAcceptedAnswer = ({ accepted = [] }: CaseLine, word: string) => {
+export const checkAnswer = ({ accepted = [] }: CaseLine, word: string) => {
   const answer = canonical(word);
-  return answer === "" ? undefined : accepted.find((option) => canonical(option) === answer);
+  return answer !== "" && accepted.some((option) => canonical(option) === answer);
 };
-
-export const checkAnswer = (line: CaseLine, word: string) => findAcceptedAnswer(line, word) !== undefined;
 
 const toDiaryLine = ({ id, owner, text, accepted, secret }: CaseLine, word: string | null): DiaryLine => ({
   id,
@@ -79,16 +78,19 @@ const toDiaryLine = ({ id, owner, text, accepted, secret }: CaseLine, word: stri
   ...(accepted && { blank: word === null ? { filled: false } : { filled: true, word } }),
 });
 
-export const toDiaryView = ({ question, lines, suggestions }: DiaryCase, progress: Progress): DiaryView => {
+export const toDiaryView = ({ question, lines, suggestions, closing }: DiaryCase, progress: Progress): DiaryView => {
   const open = lines.filter(({ id }) => progress.has(id));
   const isDone = ({ id, accepted }: CaseLine) => !accepted || progress.get(id) != null;
   const secretsOpen = open.filter(({ secret }) => secret).length;
+  const filled = open.filter(isDone).length;
+  const total = lines.filter(({ secret }) => !secret).length + secretsOpen;
   return {
     caseQuestion: question,
     lines: open.map((line) => toDiaryLine(line, progress.get(line.id) ?? null)),
-    filled: open.filter(isDone).length,
-    total: lines.filter(({ secret }) => !secret).length + secretsOpen,
+    filled,
+    total,
     secretsOpen,
     suggestions: [...suggestions],
+    ...(filled === total && { closing: { text: closing.text, references: [...closing.references] } }),
   };
 };

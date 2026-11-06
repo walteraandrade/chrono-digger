@@ -40,12 +40,21 @@
       </section>
 
       <section id="cast" class="screen" hidden>
+        <div class="case-brief">
+          <p class="eyebrow">O caso</p>
+          <p id="cast-case" class="case-question"></p>
+          <p class="hint">
+            Converse com as pessoas. O diário se preenche enquanto vocês falam, e algumas palavras só você pode
+            escrever.
+          </p>
+          <p id="cast-progress" class="hint" hidden></p>
+        </div>
         <h2>Com quem você quer falar?</h2>
         <p class="hint">Cada pessoa só sabe o que viveu. O que uma contar, a outra não ouviu.</p>
         <ul id="character-list" class="cards"></ul>
       </section>
 
-      <section id="chat" class="screen" hidden>
+      <section id="chat" class="screen" data-tab="conversation" hidden>
         <header class="chat-header">
           <button id="back" type="button" class="ghost" aria-label="Voltar para a lista">← Voltar</button>
           <img id="chat-portrait" class="portrait portrait-header" alt="" width="64" height="64" hidden />
@@ -54,12 +63,35 @@
             <p id="chat-description" class="hint"></p>
           </div>
         </header>
-        <ol id="messages" class="messages" aria-live="polite"></ol>
-        <p id="chat-error" class="error" role="alert" hidden></p>
-        <form id="ask-form" class="ask" autocomplete="off">
-          <textarea id="question" rows="2" maxlength="1000" required placeholder="Faça sua pergunta…"></textarea>
-          <button id="send" type="submit">Perguntar</button>
-        </form>
+        <p class="case-line"><span class="eyebrow">O caso</span> <span id="chat-case"></span></p>
+        <div class="tabs">
+          <button id="tab-conversation" type="button" class="ghost tab" aria-pressed="true">Conversa</button>
+          <button id="tab-diary" type="button" class="ghost tab" aria-pressed="false">Diário</button>
+        </div>
+        <div class="chat-layout">
+          <div class="conversation">
+            <ol id="messages" class="messages" aria-live="polite"></ol>
+            <p id="chat-error" class="error" role="alert" hidden></p>
+            <div class="composer">
+              <div id="suggestions" class="suggestions" aria-label="Perguntas sugeridas" hidden></div>
+              <form id="ask-form" class="ask" autocomplete="off">
+                <textarea id="question" rows="2" maxlength="1000" required placeholder="Faça sua pergunta…"></textarea>
+                <button id="send" type="submit">Perguntar</button>
+              </form>
+            </div>
+          </div>
+          <aside class="diary" aria-labelledby="diary-title">
+            <div class="diary-head">
+              <h2 id="diary-title">Diário</h2>
+              <p id="diary-count" class="diary-count"></p>
+            </div>
+            <progress id="diary-progress" aria-labelledby="diary-title" value="0" max="1"></progress>
+            <ol id="diary-lines" class="diary-lines"></ol>
+            <p id="diary-hint" class="hint"></p>
+            <section id="diary-closing" class="diary-closing" hidden></section>
+            <p id="diary-status" class="visually-hidden" role="status"></p>
+          </aside>
+        </div>
       </section>
     </main>
     <script type="module" src="/app.js"></script>

@@ -8,6 +8,7 @@ const ERROR_TEXT = {
   unknown_character: "Esse personagem não está na cena.",
   bad_request: "Não entendi a pergunta. Escreva de novo (até 1000 caracteres).",
   busy: "Espere a resposta anterior terminar.",
+  diary_failure: "Não deu para conferir a palavra. Tente de novo.",
   connection: "A conexão caiu. Envie a pergunta de novo para reconectar.",
   network: "Não consegui falar com o servidor. Verifique sua internet.",
 };
@@ -46,6 +47,23 @@ const state = {
   current: null,
   conn: null,
   busy: false,
+  caseQuestion: "",
+  diary: null,
+  drafts: new Map(),
+  feedback: new Map(),
+  filling: new Set(),
+  asked: new Set(),
+  tab: "conversation",
+};
+
+const BLANK = "____";
+const CASE_OWNER = "case";
+const FILL_FAILURES = new Set(["bad_request", "diary_failure"]);
+const FEEDBACK_TEXT = {
+  wrong: "Ainda não é essa palavra.",
+  connection: ERROR_TEXT.connection,
+  bad_request: "Essa linha não aceita essa palavra.",
+  diary_failure: ERROR_TEXT.diary_failure,
 };
 
 const el = (tag, props = {}, children = []) => {
@@ -68,7 +86,7 @@ const fetchCharacters = async (accessCode) => {
   const response = await fetch("/api/characters", { headers: { "x-access-code": accessCode } });
   if (response.status === 401) throw new Error("bad_access_code");
   if (!response.ok) throw new Error("network");
-  return (await response.json()).characters;
+  return response.json();
 };
 
 const portraitUrl = (character) => `/portraits/${encodeURIComponent(character.id)}.png`;
@@ -85,7 +103,12 @@ const portrait = (character, className) =>
     },
   });
 
+const progressText = ({ filled, total }) => `${filled} de ${total}`;
+
 const renderCast = () => {
+  $("cast-case").textContent = state.caseQuestion;
+  $("cast-progress").textContent = state.diary ? `Seu diário: ${progressText(state.diary)}` : "";
+  $("cast-progress").hidden = !state.diary;
   $("character-list").replaceChildren(
     ...state.characters.map((character) =>
       el("li", {}, [
@@ -104,7 +127,9 @@ const renderCast = () => {
 const enterScene = async (accessCode) => {
   showError("access-error", null);
   try {
-    state.characters = await fetchCharacters(accessCode);
+    const { characters, caseQuestion } = await fetchCharacters(accessCode);
+    state.characters = characters;
+    state.caseQuestion = caseQuestion ?? "";
     state.accessCode = accessCode;
     storage.set(STORAGE.accessCode, accessCode);
     renderCast();
@@ -151,10 +176,176 @@ const appendMessage = (role, text, sources) => {
   return { item, textNode };
 };
 
+const renderSuggestions = () => {
+  const suggestions = (state.diary?.suggestions ?? []).filter(
+    ({ characterId, text }) => characterId === state.current?.id && !state.asked.has(text),
+  );
+  $("suggestions").replaceChildren(
+    ...suggestions.map(({ text }) =>
+      el("button", {
+        type: "button",
+        className: "suggestion",
+        textContent: text,
+        disabled: state.busy,
+        onclick: () => ask(text),
+      }),
+    ),
+  );
+  $("suggestions").hidden = suggestions.length === 0;
+};
+
 const setBusy = (busy) => {
   state.busy = busy;
   $("send").disabled = busy;
   $("question").disabled = busy;
+  renderSuggestions();
+};
+
+const ownerName = (owner) =>
+  owner === CASE_OWNER ? "O caso" : (state.characters.find(({ id }) => id === owner)?.displayName ?? owner);
+
+const renderFillForm = (line, before, after) => {
+  const input = el("input", {
+    type: "text",
+    maxLength: 64,
+    autocomplete: "off",
+    autocapitalize: "off",
+    spellcheck: false,
+    placeholder: "palavra",
+    value: state.drafts.get(line.id) ?? "",
+    ariaLabel: `Palavra que falta: ${line.text.replace(BLANK, "lacuna")}`,
+    oninput: (event) => {
+      state.drafts.set(line.id, event.currentTarget.value);
+    },
+  });
+  input.dataset.lineId = line.id;
+  return el(
+    "form",
+    {
+      className: "fill",
+      onsubmit: (event) => {
+        event.preventDefault();
+        submitFill(line.id);
+      },
+    },
+    [
+      ...(before ? [el("span", { textContent: before })] : []),
+      input,
+      ...(after ? [el("span", { textContent: after })] : []),
+      el("button", {
+        type: "submit",
+        textContent: "OK",
+        ariaLabel: "Conferir palavra",
+        disabled: state.filling.has(line.id),
+      }),
+    ],
+  );
+};
+
+const renderLineBody = (line) => {
+  const [before = "", after = ""] = line.text.split(BLANK);
+  if (!line.blank) return el("span", { textContent: line.text });
+  if (!line.blank.filled) return renderFillForm(line, before, after);
+  return el("span", {}, [before, el("span", { className: "diary-word", textContent: line.blank.word }), after]);
+};
+
+const renderLine = (line, highlighted) => {
+  const feedback = FEEDBACK_TEXT[state.feedback.get(line.id)];
+  const classes = ["diary-line", line.secret && "is-secret", highlighted.has(line.id) && "is-new"];
+  return el("li", { className: classes.filter(Boolean).join(" ") }, [
+    el("span", { className: "diary-owner", textContent: `${line.secret ? "★ " : ""}${ownerName(line.owner)}` }),
+    renderLineBody(line),
+    ...(feedback ? [el("span", { className: "fill-feedback", textContent: feedback })] : []),
+  ]);
+};
+
+const diaryHint = ({ lines, total, filled }) => {
+  const closed = total - lines.length;
+  if (closed > 0) return `${closed === 1 ? "Falta 1 linha" : `Faltam ${closed} linhas`}. Continue conversando para abrir.`;
+  return filled < total ? "Todas as linhas abriram. Falta escrever as palavras." : "";
+};
+
+const renderClosing = (closing) => {
+  $("diary-closing").hidden = !closing;
+  $("diary-closing").replaceChildren(
+    ...(closing
+      ? [
+          el("h3", { textContent: "O que as fontes dizem" }),
+          el("p", { textContent: closing.text }),
+          el("ul", {}, closing.references.map((reference) => el("li", { textContent: reference }))),
+        ]
+      : []),
+  );
+};
+
+const focusedLineId = () => document.activeElement?.dataset?.lineId;
+
+const lineInput = (lineId) => document.querySelector(`input[data-line-id="${CSS.escape(lineId)}"]`);
+
+const renderDiary = (highlighted = new Set()) => {
+  const { diary } = state;
+  $("chat-case").textContent = diary?.caseQuestion ?? state.caseQuestion;
+  $("tab-diary").textContent = diary ? `Diário ${diary.filled}/${diary.total}` : "Diário";
+  if (!diary) {
+    $("diary-count").textContent = "";
+    $("diary-lines").replaceChildren();
+    $("diary-hint").textContent = "O diário não abriu. Volte e entre na conversa de novo.";
+    return renderClosing(undefined);
+  }
+  const focused = focusedLineId();
+  const selection = focused && [document.activeElement.selectionStart, document.activeElement.selectionEnd];
+  $("diary-count").textContent = `${progressText(diary)}${diary.secretsOpen > 0 ? ` · ★ ${diary.secretsOpen}` : ""}`;
+  $("diary-progress").max = Math.max(diary.total, 1);
+  $("diary-progress").value = diary.filled;
+  $("diary-lines").replaceChildren(...diary.lines.map((line) => renderLine(line, highlighted)));
+  $("diary-hint").textContent = diaryHint(diary);
+  renderClosing(diary.closing);
+  const restored = focused && lineInput(focused);
+  if (restored) {
+    restored.focus();
+    restored.setSelectionRange(...selection);
+  } else if (focused) document.querySelector(".fill input")?.focus();
+};
+
+const changedLineIds = (previous, next) => {
+  if (!previous) return new Set();
+  const before = new Map(previous.lines.map((line) => [line.id, line.blank?.filled]));
+  return new Set(
+    next.lines.filter((line) => !before.has(line.id) || before.get(line.id) !== line.blank?.filled).map(({ id }) => id),
+  );
+};
+
+const setTab = (tab) => {
+  state.tab = tab;
+  $("chat").dataset.tab = tab;
+  $("tab-conversation").setAttribute("aria-pressed", String(tab === "conversation"));
+  $("tab-diary").setAttribute("aria-pressed", String(tab === "diary"));
+  if (tab === "diary") $("tab-diary").classList.remove("has-news");
+};
+
+const applyDiary = ({ type: _type, ...diary }) => {
+  const changed = changedLineIds(state.diary, diary);
+  const opened = state.diary ? diary.lines.length - state.diary.lines.length : 0;
+  state.diary = diary;
+  renderDiary(changed);
+  renderSuggestions();
+  if (changed.size === 0) return;
+  if (state.tab !== "diary") $("tab-diary").classList.add("has-news");
+  $("diary-status").textContent =
+    opened > 0
+      ? `${opened === 1 ? "Nova linha" : `${opened} novas linhas`} no diário. ${progressText(diary)}.`
+      : `Palavra certa. ${progressText(diary)}.`;
+};
+
+const settleFill = (conn, lineId, outcome) => {
+  conn.fills = conn.fills.filter((id) => id !== lineId);
+  state.filling.delete(lineId);
+  if (outcome) state.feedback.set(lineId, outcome);
+  else {
+    state.feedback.delete(lineId);
+    state.drafts.delete(lineId);
+  }
+  renderDiary();
 };
 
 const isCurrent = (conn) => state.conn === conn;
@@ -177,7 +368,10 @@ const failTurn = (conn, errorKey) => {
 const finishTurn = (conn) => {
   const pending = conn.pending;
   conn.pending = null;
-  if (pending) pending.answer.item.classList.remove("pending");
+  if (pending) {
+    pending.answer.item.classList.remove("pending");
+    state.asked.add(pending.text);
+  }
   if (isCurrent(conn)) setBusy(false);
 };
 
@@ -212,9 +406,16 @@ const handleServerMessage = (conn, message) => {
       message.messages.forEach((entry) =>
         appendMessage(entry.role, entry.text, entry.role === "assistant" ? entry.sources : undefined),
       );
+    message.messages
+      .filter(({ role }) => role === "user")
+      .forEach(({ text }) => state.asked.add(text));
     conn.historySeen = true;
-    return;
+    return renderSuggestions();
   }
+  if (message.type === "diary") return applyDiary(message);
+  if (message.type === "fillResult") return settleFill(conn, message.lineId, message.correct ? null : "wrong");
+  if (message.type === "error" && FILL_FAILURES.has(message.error) && conn.fills.length > 0)
+    return settleFill(conn, conn.fills[0], message.error);
   if (message.type === "error")
     return message.error === "bad_access_code" ? returnToIntro() : failTurn(conn, message.error);
   const pending = conn.pending;
@@ -241,6 +442,7 @@ const connect = (character, { replayHistory }) =>
       replayHistory,
       historySeen: false,
       pending: null,
+      fills: [],
     };
     state.conn = conn;
     conn.socket.addEventListener("message", (event) => handleServerMessage(conn, parseMessage(event.data)));
@@ -248,6 +450,7 @@ const connect = (character, { replayHistory }) =>
     conn.socket.addEventListener("error", () => resolve(conn));
     conn.socket.addEventListener("close", () => {
       resolve(conn);
+      conn.fills.forEach((lineId) => settleFill(conn, lineId, "connection"));
       if (!isCurrent(conn)) return;
       if (conn.pending) failTurn(conn, "connection");
       state.conn = null;
@@ -263,7 +466,11 @@ const openChat = async (character) => {
   $("chat-name").textContent = character.displayName;
   $("chat-description").textContent = character.description;
   $("messages").replaceChildren();
+  state.asked = new Set();
   showError("chat-error", null);
+  setTab("conversation");
+  renderDiary();
+  renderSuggestions();
   show("chat");
   await connect(character, { replayHistory: true });
   $("question").focus();
@@ -280,9 +487,26 @@ const ask = async (text) => {
     showError("chat-error", "connection");
     return setBusy(false);
   }
-  conn.pending = { question: appendMessage("user", text), answer: appendMessage("assistant", "") };
+  conn.pending = { text, question: appendMessage("user", text), answer: appendMessage("assistant", "") };
   conn.pending.answer.item.classList.add("pending");
   conn.socket.send(JSON.stringify({ type: "ask", text }));
+};
+
+const submitFill = async (lineId) => {
+  const word = (state.drafts.get(lineId) ?? "").trim();
+  if (!word || state.filling.has(lineId)) return;
+  state.feedback.delete(lineId);
+  state.filling.add(lineId);
+  renderDiary();
+  const character = state.current;
+  const conn = isOpen(state.conn) ? state.conn : await connect(character, { replayHistory: false });
+  if (!isOpen(conn)) {
+    state.filling.delete(lineId);
+    state.feedback.set(lineId, "connection");
+    return renderDiary();
+  }
+  conn.fills.push(lineId);
+  conn.socket.send(JSON.stringify({ type: "fill", lineId, word }));
 };
 
 $("access-form").addEventListener("submit", (event) => {
@@ -308,8 +532,12 @@ $("question").addEventListener("keydown", (event) => {
 
 $("back").addEventListener("click", () => {
   closeConnection();
+  renderCast();
   show("cast");
 });
+
+$("tab-conversation").addEventListener("click", () => setTab("conversation"));
+$("tab-diary").addEventListener("click", () => setTab("diary"));
 
 if (state.accessCode) $("access-code").value = state.accessCode;
 

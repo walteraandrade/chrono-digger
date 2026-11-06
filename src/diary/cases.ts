@@ -23,6 +23,7 @@ export type DiaryCase = {
   question: string;
   lines: readonly CaseLine[];
   suggestions: readonly SuggestedQuestion[];
+  closing: { text: string; references: readonly string[] };
 };
 
 export const sandwichCase: DiaryCase = {
@@ -93,4 +94,12 @@ export const sandwichCase: DiaryCase = {
     { characterId: "harrach", text: "Onde você estava no carro?" },
     { characterId: "albertini", text: "Essa história do sanduíche é verdade?" },
   ],
+  closing: {
+    text: "Nenhuma voz desta cena fala em sanduíche. No processo, Princip contou que esperava na esquina, diante de uma loja. Harrach contou que estava no estribo e que os tiros vieram do lado oposto. A menção mais antiga ao sanduíche que o projeto achou está num romance de 1998, décadas depois.",
+    references: [
+      "Pharos (ed.), Der Prozeß gegen die Attentäter von Sarajewo, 1918, pp. 30 e 158–159",
+      "Jô Soares, O homem que matou Getúlio Vargas, 1998",
+      "Mike Dash, 2011, sobre a origem da história do sanduíche",
+    ],
+  },
 };

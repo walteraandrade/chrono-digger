@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sandwichCase } from "../../src/diary/cases";
-import { connect, newPlayerId, openChat } from "../client";
-import { TEST_DAILY_LIMIT } from "../constants";
+import { connect, getCharacters, newPlayerId, openChat } from "../client";
+import { TEST_ACCESS_CODE, TEST_DAILY_LIMIT } from "../constants";
 import { FAIL_TRIGGER, HANG_TRIGGER } from "../fakes/providers";
 
 const PRINCIP_CORNER_WORDS = "stellte mich an der Straßenecke vor einem Kaufladen auf";
@@ -12,6 +12,15 @@ const readFill = async (chat: Awaited<ReturnType<typeof openChat>>, lineId: stri
   chat.send({ type: "fill", lineId, word });
   return chat.next();
 };
+
+describe("character list", () => {
+  it("carries the case question, and nothing else from the case", async () => {
+    const response = await getCharacters(TEST_ACCESS_CODE);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.caseQuestion).toBe(sandwichCase.question);
+    expect(JSON.stringify(body)).not.toMatch(/ninguém|accepted|Pušara/);
+  });
+});
 
 describe("diary on connect", () => {
   it("arrives after the history, with only the verdict open", async () => {
@@ -90,7 +99,7 @@ describe("diary after a turn", () => {
 });
 
 describe("filling a blank", () => {
-  it("accepts a right word, sends the result and the new diary, and keeps the accepted spelling", async () => {
+  it("accepts a synonym, sends the result and the new diary, and shows the line's own word", async () => {
     const chat = await openChat("princip", newPlayerId());
     await chat.ask(PRINCIP_CORNER_WORDS);
     expect(await readFill(chat, "princip-shop", " ARMAZEM ")).toEqual({
@@ -102,7 +111,7 @@ describe("filling a blank", () => {
     expect(diary).toMatchObject({ type: "diary", filled: 1 });
     expect((diary as never as { lines: { blank?: unknown }[] }).lines[1]?.blank).toEqual({
       filled: true,
-      word: "armazém",
+      word: "loja",
     });
   });
 

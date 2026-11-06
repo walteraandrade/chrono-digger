@@ -1,6 +1,6 @@
 # Diário de investigação
 
-Status: proposta de 2026-11-06. Regras e servidor estão implementados (`src/diary/`). A tela ainda não.
+Status: proposta de 2026-11-06. Regras, servidor e tela estão implementados. Falta o eval do diário e o teste com pessoas.
 
 ## Problema
 
@@ -67,6 +67,7 @@ O que isso mostra:
 
 Limites da medição:
 
+- **Configuração diferente da `main`:** a medição rodou com `MIN_SOURCE_SCORE` 0.4, `temperature` 0.2 e o prompt de `feat/albertini-rota-source`. Na `main`, com 0.45, "Onde você estava no carro?" trouxe só `pharos-1918-harrach-01` numa rodada, e `harrach-side` não abriu. Com 0.4 os dois trechos voltaram. O diário só tem os números medidos em cima dessa configuração.
 - É uma redação de pergunta por linha. Outra redação muda o resultado: em `openrouter-3`, "É verdade que você estava comendo um sanduíche quando o carro parou?" não trouxe "esquina" nem "loja".
 - As 3 rodadas não são independentes o bastante. Com `temperature` 0.2, várias respostas saíram iguais; `harrach-where` e `princip-secret-a` saíram idênticas nas 3.
 - Ninguém real jogou.
@@ -129,6 +130,7 @@ A comparação ignora maiúsculas, acentos e pontuação e olha palavras inteira
 - Preencher uma lacuna não gasta pergunta do limite diário.
 - Pode tentar quantas vezes quiser. Errar não custa nada.
 - Uma lacuna aberta aceita a palavra mesmo se o personagem não a disse.
+- Depois do acerto, a linha mostra a palavra dela, não o sinônimo digitado. Quem escreve "armazém" lê "Estava diante de uma loja".
 
 ## Onde fica cada coisa
 
@@ -205,7 +207,7 @@ Meta inicial, a rever depois de medir:
 1. **Medir:** feito (ver Medição). Falta só testar perguntas fora do assunto, junto do eval do diário.
 2. **Regras:** feito (`src/diary/`, testes em `test/diary/`).
 3. **Servidor:** feito (`src/diary/player-diary.ts`, testes em `test/seam/diary.test.ts`). Testado só com provedores falsos.
-4. **Tela:** painel do diário.
+4. **Tela:** feito (`public/`). Testada no navegador com o modelo real, em desktop e em 375 px de largura.
 5. **Eval do diário:** script e metas.
 6. **Teste com pessoas:** 3 a 5 pessoas, olhando se elas entendem o objetivo.
 
@@ -215,3 +217,5 @@ Meta inicial, a rever depois de medir:
 - `case-verdict` abre desde o início e aceita "não". Dá para acertar sem conversar com ninguém. Isso é aceitável?
 - Escrever a palavra basta para a pessoa comparar versões? Só o teste com pessoas responde.
 - O que a pessoa recebe ao completar o diário, além das fontes?
+- A referência a Mike Dash (2011) no texto final não tem título nem página. Falta completar.
+- A linha da esquina não dá pista nenhuma do segredo. Basta a palavra "esquina" para alguém perguntar mais? Só o teste com pessoas responde.

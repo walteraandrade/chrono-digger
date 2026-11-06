@@ -10,7 +10,7 @@ Header: `x-access-code: <shared access code>`
 
 - `200`:
   ```json
-  { "characters": [{ "id": "princip", "displayName": "Gavrilo Princip", "description": "..." }] }
+  { "caseQuestion": "Princip estava comendo um sanduíche?", "characters": [{ "id": "princip", "displayName": "Gavrilo Princip", "description": "..." }] }
   ```
   Array order carries no meaning. Clients must ignore unknown fields.
 - `401`: `{ "type": "error", "error": "bad_access_code", "message": "..." }`
@@ -54,7 +54,7 @@ Then the player's diary, shared across all characters of that `playerId`:
   "type": "diary",
   "caseQuestion": "Princip estava comendo um sanduíche?",
   "lines": [
-    { "id": "princip-shop", "owner": "princip", "text": "Estava diante de uma ____", "blank": { "filled": true, "word": "armazém" }, "secret": false },
+    { "id": "princip-shop", "owner": "princip", "text": "Estava diante de uma ____", "blank": { "filled": true, "word": "loja" }, "secret": false },
     { "id": "albertini-none", "owner": "albertini", "text": "...", "secret": false }
   ],
   "filled": 2,
@@ -66,7 +66,8 @@ Then the player's diary, shared across all characters of that `playerId`:
 
 - Closed lines are not sent. `total` counts every common line plus the secrets already open, so a closed secret stays invisible.
 - `owner` is a character id or `case`. A line without `blank` is done as soon as it opens.
-- `word` appears only after a right answer. It is the accepted spelling, not what the player typed.
+- `word` appears only after a right answer. It is the line's own word, so the sentence stays grammatical: a player who types the synonym "armazém" sees "loja".
+- `closing` (`text`, `references`) appears only when `filled` equals `total`.
 - `suggestions` is static. Show a suggestion on its character's chat and hide it once its `text` is in that conversation's history; failed turns are not stored, so a failed suggestion stays. Clicking sends a normal `ask`.
 - If the diary cannot be read, this message is skipped and the chat keeps working.
 

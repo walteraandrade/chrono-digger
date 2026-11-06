@@ -4,11 +4,12 @@ History Sim v1: a pt-br single page where students question source-grounded AI c
 
 ## Layout
 
-- `src/index.ts` — Worker entry (exports `CharacterSession`, `PlayerQuota`, `GlobalQuota`)
+- `src/index.ts` — Worker entry (exports `CharacterSession`, `PlayerQuota`, `GlobalQuota`, `PlayerDiary`)
 - `src/worker.ts` — HTTP/WebSocket routing, access code
 - `src/session.ts` — `CharacterSession` Durable Object (history per `(playerId, characterId)`, hibernatable WebSockets)
 - `src/quota.ts` — `PlayerQuota` and `GlobalQuota` Durable Objects (daily limits per `playerId` and for the whole deployment, UTC day; failed turns are refunded)
 - `src/turn.ts`, `src/prompt.ts` — character turn as an `Effect`: retrieve → build prompt → stream → sources, under one deadline
+- `src/diary/` — investigation diary: case data and accepted answers (server only), pure rules, `PlayerDiary` Durable Object (see `docs/diary.md`)
 - `src/characters.ts`, `src/glossary.ts` — data
 - `src/providers/` — `ChatProvider` / `EmbeddingProvider` / `RetrievalIndex` (return `Effect`/`Stream`, fail with `ProviderError`), adapters `workers-ai`, `openrouter`, `vectorize`. Import Effect by module (`effect/Effect`), not from the `effect` barrel: the barrel doubles test time
 - `public/` — static frontend served through Workers Assets
