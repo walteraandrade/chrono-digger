@@ -1,6 +1,6 @@
 # Diário de investigação
 
-Status: proposta de 2026-11-06. Nada implementado.
+Status: proposta de 2026-11-06. Só as regras estão implementadas (`src/diary/`). Servidor e tela ainda não.
 
 ## Problema
 
@@ -36,13 +36,13 @@ Um diário que se preenche enquanto a pessoa conversa, como um álbum de figurin
 | `princip-shop` | Princip | Estava diante de uma [loja] | loja, armazém, venda | trecho `pharos-1918-princip-16` |
 | `harrach-step` | Harrach | Ficou no [estribo] do carro | estribo | trecho `pharos-1918-harrach-01` |
 | `harrach-side` | Harrach | Os tiros vieram do lado [oposto] ao dele | oposto, contrário, outro | trecho `pharos-1918-harrach-02` |
-| `albertini-none` | Albertini | Não encontrou essa história nas fontes dele | linha sem lacuna | assunto: sanduíche, sandwich, lanche, comendo |
+| `albertini-none` | Albertini | Não encontrou essa história nas fontes dele | linha sem lacuna | assunto: sanduíche, sandwich, lanche, com plural; comendo |
 | `case-verdict` | Caso | Alguma voz confirma o sanduíche? [ninguém] | ninguém, nenhuma, nenhum, não | aberta desde o início |
 | `princip-stranger` ★ | Princip | Um homem abordou Princip na esquina: [Pušara] | Pušara, Pusara | palavra dita: Pušara, Pusara |
 
 ★ Segredo: a tela não mostra que ele existe antes de abrir. O total só conta segredos já abertos, com um ★ à parte.
 
-Esta tabela é um rascunho. Falta rever cada linha contra a fonte.
+As linhas de Princip e Harrach foram conferidas contra Pharos, pp. 30 e 158–159. `albertini-none` não tem trecho que a apoie: o corpus só traz partes de Albertini, então "não encontrou" diz mais do que sabemos.
 
 ## Medição
 
@@ -121,7 +121,7 @@ Por que três:
 - **`chunk` não esconde nada.** Pušara está em `pharos-1918-princip-16`, o mesmo trecho da esquina. Um segredo com gatilho `chunk` abriria sozinho.
 - **`askedAbout` cobre o que não tem trecho.** Nenhum trecho do corpus fala de sanduíche.
 
-A comparação ignora maiúsculas e acentos. Termos com várias palavras precisam aparecer inteiros e em ordem.
+A comparação ignora maiúsculas, acentos e pontuação e olha palavras inteiras: "lanche" não casa com "lanchonete". Termos com várias palavras precisam aparecer inteiros e em ordem. Cada gatilho só vale para o dono da linha.
 
 ## Correção
 
@@ -226,7 +226,7 @@ Meta inicial, a rever depois de medir:
 ## Ordem de trabalho
 
 1. **Medir:** feito (ver Medição). Falta só testar perguntas fora do assunto, junto do eval do diário.
-2. **Regras:** `src/diary/` com testes.
+2. **Regras:** feito (`src/diary/`, testes em `test/diary/`).
 3. **Servidor:** `PlayerDiary` e contrato.
 4. **Tela:** painel do diário.
 5. **Eval do diário:** script e metas.
@@ -234,6 +234,7 @@ Meta inicial, a rever depois de medir:
 
 ## Perguntas em aberto
 
-- As linhas do caso estão certas contra a fonte?
+- O que `albertini-none` pode afirmar? Ele morreu em 1941, e a menção mais antiga achada ao sanduíche é de 1998 ([CONTEXT.md](../CONTEXT.md)).
+- `case-verdict` abre desde o início e aceita "não". Dá para acertar sem conversar com ninguém. Isso é aceitável?
 - Escrever a palavra basta para a pessoa comparar versões? Só o teste com pessoas responde.
 - O que a pessoa recebe ao completar o diário, além das fontes?
