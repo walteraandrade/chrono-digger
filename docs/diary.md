@@ -170,6 +170,25 @@ type ClientMessage =
 - Linha fechada não é enviada. `word` só é enviada depois do acerto. `text` traz a lacuna em branco.
 - `fill` em linha fechada ou inexistente devolve `bad_request`.
 
+## Perguntas sugeridas
+
+Botões acima do campo de pergunta. Clicar envia a pergunta como se a pessoa a tivesse digitado, e ela gasta uma pergunta do limite.
+
+| Personagem | Pergunta | Abre |
+|---|---|---|
+| Princip | Onde você estava quando o carro parou? | `princip-corner`, `princip-shop` |
+| Harrach | Onde você estava no carro? | `harrach-step`, `harrach-side` |
+| Albertini | Essa história do sanduíche é verdade? | `albertini-none` |
+
+Regras:
+
+- Usar só perguntas já medidas. Toda sugestão nova entra no eval do diário.
+- Nunca sugerir caminho de segredo. Nada de sugestão que fale da esquina ou de conversa com alguém.
+- A sugestão some depois de usada.
+- Texto e personagem podem ir para a tela. As respostas aceitas, não.
+
+Com essas 3 perguntas, a pessoa abre todas as linhas comuns e pode preencher o caso. O segredo fica para quem seguir a pista da esquina. Preço: dá para terminar as linhas comuns só clicando, e digitar segue sendo opcional. O teste com pessoas mostra se isso esvazia a investigação.
+
 ## Tela
 
 - A pergunta do caso fica visível na lista de personagens e no chat.
@@ -199,7 +218,7 @@ Meta inicial, a rever depois de medir:
 | O modelo não diz a palavra | Depende da redação: ver Medição | Aceitar sinônimos. Testar com várias redações. Se ficar abaixo da meta, passar as palavras-chave do trecho buscado ao prompt |
 | Palavra-chave no prompt soa falsa ou entrega segredo | Não testado | Medir, se for preciso usar. Segredos nunca entram na lista |
 | O segredo fica difícil demais | Uma pergunta abriu 3/3 e outra 0/3 | Dar a pista na linha da esquina |
-| Pergunta informal não abre nada | "vc tava onde na hora?" falhou 2/2 | Decidir antes de testar com pessoas: ver Perguntas em aberto |
+| Pergunta informal não abre nada | "vc tava onde na hora?" falhou 2/2 | Perguntas sugeridas reduzem o risco, mas quem digitar do próprio jeito ainda pode cair nisso |
 | Vira caça-palavras | Hipótese | Observar pessoas jogando |
 | Caso curto demais | São só 7 linhas | Decidir depois do teste; o próximo caso seria `tiro-bomba` |
 | Limite de 10 perguntas frustra | Cada tentativa de segredo gasta uma pergunta | Manter o diário bem abaixo do limite |
@@ -216,6 +235,5 @@ Meta inicial, a rever depois de medir:
 ## Perguntas em aberto
 
 - As linhas do caso estão certas contra a fonte?
-- Como lidar com pergunta informal? Perguntas sugeridas na tela resolvem, mas dão o caminho pronto. Reescrever a pergunta antes da busca mantém a liberdade, mas gasta mais cota e adiciona uma chamada de IA.
 - Escrever a palavra basta para a pessoa comparar versões? Só o teste com pessoas responde.
 - O que a pessoa recebe ao completar o diário, além das fontes?
