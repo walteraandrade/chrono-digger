@@ -8,8 +8,9 @@ import { type Chunk, ProviderError, type Source } from "./providers/types";
 export type { Source };
 
 export const TOP_K = 4;
-export const DEFAULT_MIN_SOURCE_SCORE = 0.45;
+export const DEFAULT_MIN_SOURCE_SCORE = 0.4;
 export const DEFAULT_TURN_TIMEOUT_MS = 45_000;
+export const CHARACTER_TEMPERATURE = 0.2;
 
 export type TurnResult = { answer: string; sources: Source[] };
 
@@ -48,7 +49,7 @@ export const runCharacterTurn = ({
     const scored = yield* index.search(vector, { characterId: character.id, topK: TOP_K });
     const chunks = scored.filter(({ score }) => score >= minScore).map(({ score: _score, ...chunk }) => chunk);
     const messages = buildPrompt({ character, chunks, history, question });
-    const answer = yield* chat.stream(messages).pipe(
+    const answer = yield* chat.stream(messages, { temperature: CHARACTER_TEMPERATURE }).pipe(
       Stream.tap((piece) => Effect.sync(() => onChunk(piece))),
       Stream.runFold(
         () => "",

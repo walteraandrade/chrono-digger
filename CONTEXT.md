@@ -2,7 +2,7 @@
 
 Protótipo de educação gamificada: quem joga entra numa cena histórica e conversa com personagens de IA ancorados em fontes. Referência de arquitetura: curso PhiloAgents ([repo](https://github.com/neural-maze/philoagents-course), MIT). Transcripts dos 6 vídeos (curso completo + episódios I–V) em `philoagents-transcripts.md`, na raiz do checkout principal; fica no `.gitignore` (legendas de terceiros), então não aparece em worktrees.
 
-Status: planejamento fechado em 2026-10-22. Corpus e código da v1 prontos em 2026-10-26 (testes locais com fakes). Runner do eval pronto (#11). O índice real já devolve trechos (conferido só com Princip, em 2026-11-05). Falta: deploy na Cloudflare, juiz do eval (#12).
+Status: planejamento fechado em 2026-10-22. Corpus e código da v1 prontos em 2026-10-26 (testes locais com fakes). Runner e juiz do eval prontos (#11, #12). O índice real já devolve trechos (conferido só com Princip, em 2026-11-05). Eval em 2026-11-05, Llama 3.3 70B: `rejected`. Foi de 23/35 para 27/35 depois de ajustes no prompt, mas ainda há invenção e o fio `rota` falha (ver `eval/reports/`). Falta: decidir como chegar a 90%, deploy na Cloudflare.
 
 ## Pergunta que a v1 responde
 
