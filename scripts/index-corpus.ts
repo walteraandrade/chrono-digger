@@ -1,9 +1,10 @@
 import { parseArgs } from "node:util";
 import * as Effect from "effect/Effect";
 import { chunkToMetadata } from "../src/corpus.ts";
-import { createOpenRouterProvider, gatewayAuthHeaders } from "../src/providers/openrouter.ts";
+import { createOpenRouterProvider } from "../src/providers/openrouter.ts";
 import type { Chunk, EmbeddingProvider } from "../src/providers/types.ts";
-import { type AiRunner, createWorkersAiProvider } from "../src/providers/workers-ai.ts";
+import { createWorkersAiProvider } from "../src/providers/workers-ai.ts";
+import { cloudflareHeaders, restAiRunner } from "./cloudflare-rest.ts";
 import { countByCharacter, loadCorpus } from "./corpus-loader.ts";
 
 const { values: args } = parseArgs({
@@ -22,27 +23,6 @@ const required = (name: string) => {
   return value;
 };
 
-const cloudflareHeaders = (token: string) => ({
-  authorization: `Bearer ${token}`,
-  "content-type": "application/json",
-});
-
-const restAiRunner = (accountId: string, token: string, gatewayId?: string, gatewayToken?: string): AiRunner => ({
-  async run(model, inputs) {
-    const url = gatewayId
-      ? `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/workers-ai/${model}`
-      : `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { ...cloudflareHeaders(token), ...(gatewayId ? gatewayAuthHeaders(gatewayToken) : {}) },
-      body: JSON.stringify(inputs),
-    });
-    if (!response.ok) throw new Error(`workers-ai ${model}: ${response.status} ${await response.text()}`);
-    const json = (await response.json()) as { result?: unknown };
-    return json.result ?? json;
-  },
-});
-
 const selectEmbeddingProvider = (): EmbeddingProvider => {
   const accountId = required("CLOUDFLARE_ACCOUNT_ID");
   const gatewayId = env.AI_GATEWAY_ID || undefined;
@@ -50,7 +30,7 @@ const selectEmbeddingProvider = (): EmbeddingProvider => {
   const provider = env.EMBEDDING_PROVIDER || "workers-ai";
   if (provider === "workers-ai")
     return createWorkersAiProvider({
-      ai: restAiRunner(accountId, required("CLOUDFLARE_API_TOKEN"), gatewayId, gatewayToken),
+      ai: restAiRunner({ accountId, token: required("CLOUDFLARE_API_TOKEN"), gatewayId, gatewayToken }),
       embeddingModel: env.WORKERS_AI_EMBEDDING_MODEL || undefined,
     });
   if (provider === "openrouter")

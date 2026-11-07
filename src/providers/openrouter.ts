@@ -60,9 +60,9 @@ export const createOpenRouterProvider = ({
     );
   return {
     name: "openrouter",
-    stream: (messages, { maxTokens = 512 } = {}) =>
+    stream: (messages, { maxTokens = 512, temperature } = {}) =>
       Stream.unwrap(
-        post("/chat/completions", { model: chatModel, messages, stream: true, max_tokens: maxTokens }).pipe(
+        post("/chat/completions", { model: chatModel, messages, stream: true, max_tokens: maxTokens, temperature }).pipe(
           Effect.flatMap(({ body }) =>
             body
               ? Effect.succeed(readSseDeltas(body))

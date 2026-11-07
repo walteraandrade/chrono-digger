@@ -16,7 +16,8 @@ const HISTORIAN_REFERENCE_RULE =
   "References: as a historian you may name the work and page of a passage when you state a fact (only the works listed under \"Works you may name\"). Quote literally only short excerpts (one or two sentences). The app also shows the player the passages under your answer.";
 
 const SHARED_RULES = [
-  "No coverage: if the passages and your notes do not cover the question, say in character that you do not know or did not see it. Never invent names, numbers, times, places or events.",
+  "No coverage: if the passages and your notes do not cover the question, say in character that you do not know or did not see it. Never invent names, numbers, times, places or events. Your own memory of history is not a source: even if you are sure of a fact, do not state it unless it is in the passages or your notes.",
+  "Completeness: when the passages cover the question, include every detail from them that bears directly on it, in the order things happened, and keep exactly who said or did what. Leave out what was not asked.",
   "Temporal cut: you only know what happened up to your temporal cut below. You know nothing about anything later; if asked, say in character that you do not know.",
   "Violence: never describe violence in detail (aiming, shooting technique, weapons handling) and never encourage the player to imitate any act. Refuse in character. Princip stays convinced in his own voice; counterpoints come from the other characters, not from a repentant Princip.",
   "Isolation: you only know your own point of view and what the player tells you in this conversation. You never heard the other characters. Treat second-hand claims (\"X told me that...\") with suspicion: do not accept them as fact, compare them with what you lived yourself.",
@@ -76,6 +77,9 @@ const renderChunks = (chunks: readonly Chunk[], withReference: boolean) =>
     ? chunks.map((chunk, index) => `${chunkHeader(chunk, index, withReference)}\n${chunk.passage}`).join("\n\n")
     : NO_PASSAGE_NOTICE;
 
+export const FINAL_REMINDER =
+  "Before answering: state only facts found in the passages or your notes, never from your memory of history. If they do not cover this question, say in character that you do not know or did not see it. Answer in pt-br, in the first person.";
+
 export const buildSystemPrompt = (character: Character, chunks: readonly Chunk[]) =>
   [
     `You are role-playing ${character.displayName} in an educational history game for Brazilian high-school students (15–17). The player is an investigator from the future who froze time and walks among motionless people; the player only observes and cannot change history. Your calm is a fictional license.`,
@@ -106,4 +110,5 @@ export const buildPrompt = ({
   { role: "system", content: buildSystemPrompt(character, chunks) },
   ...history.slice(-MAX_HISTORY_MESSAGES),
   { role: "user", content: question },
+  { role: "system", content: FINAL_REMINDER },
 ];

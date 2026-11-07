@@ -14,6 +14,7 @@ History Sim v1: a pt-br single page where students question source-grounded AI c
 - `src/providers/` — `ChatProvider` / `EmbeddingProvider` / `RetrievalIndex` (return `Effect`/`Stream`, fail with `ProviderError`), adapters `workers-ai`, `openrouter`, `vectorize`. Import Effect by module (`effect/Effect`), not from the `effect` barrel: the barrel doubles test time
 - `public/` — static frontend served through Workers Assets
 - `scripts/index-corpus.ts` — embeds `corpus/*.json` and upserts into Vectorize
+- `eval/cases.json`, `scripts/run-eval.ts`, `scripts/judge-eval.ts` — fidelity eval cases, on-demand runner and judge
 - `test/` — tests through the Worker entry only; fakes injected via env at the provider boundary
 
 ## Setup
@@ -39,7 +40,7 @@ Create an AI Gateway named as `AI_GATEWAY_ID` (default `chrono-digger`) in the d
 | `ACCESS_CODE_DISABLED` | dev only | `true` in `.dev.vars` opens access without a code, only for requests to `localhost`, `127.0.0.1` or `[::1]`. Other hosts still require `ACCESS_CODE` |
 | `DAILY_LIMIT` | var | messages per `playerId` per UTC day, default `10` |
 | `GLOBAL_DAILY_LIMIT` | var | messages for the whole deployment per UTC day, default `60`. The free plan gives ~70 answers/day on Llama 3.3 70B (10k neurons), shared with the fidelity eval |
-| `MIN_SOURCE_SCORE` | var | minimum retrieval score for a passage to be used, default `0.45` (bge-m3 cosine). **Needs calibration** against the real index: run the fidelity eval and adjust so trap questions get no passage and covered questions keep theirs. Changing the embedding model requires recalibrating |
+| `MIN_SOURCE_SCORE` | var | minimum retrieval score for a passage to be used, default `0.4` (bge-m3 cosine). Measured on the eval questions: scores do not separate covered from uncovered questions, so this only drops clearly unrelated passages; refusing is the prompt's job. Changing the embedding model requires recalibrating |
 | `TURN_TIMEOUT_MS` | var | deadline for the whole turn (embed, query, chat start, stream), default `45000`; on timeout the turn fails with `provider_failure` |
 | `CHAT_PROVIDER` | var | `workers-ai` (default) or `openrouter` |
 | `EMBEDDING_PROVIDER` | var | `workers-ai` (default) or `openrouter`; changing it requires reindexing |
@@ -63,7 +64,12 @@ pnpm typecheck    # tsc for worker/tests and for node scripts
 pnpm test         # vitest + @cloudflare/vitest-pool-workers
 pnpm index:check  # validate corpus/*.json, upload nothing
 pnpm index:corpus # embed and upsert corpus/*.json into Vectorize
+pnpm eval:check   # validate eval/cases.json, spend nothing
+pnpm eval:run --provider workers-ai # ask every eval case through a local wrangler dev; spends real quota
+pnpm eval:judge --run <id> # grade a run and write eval/reports/<id>.md; spends real quota
 ```
+
+See `docs/fidelity-eval.md` ("Como rodar") for eval options and quota.
 
 `index:corpus` loads `.env` if present and reads `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Workers AI + Vectorize edit), `AI_GATEWAY_ID`, `AI_GATEWAY_TOKEN` (authenticated gateway only), `VECTORIZE_INDEX` (default `chrono-digger-corpus`), `EMBEDDING_PROVIDER` and, for OpenRouter, `OPENROUTER_API_KEY`. Upserts are idempotent by chunk id, so rerunning reindexes.
 
@@ -75,4 +81,4 @@ Projects in `vitest.config.ts`:
 - `global-quota` — same fakes, with a tiny `GLOBAL_DAILY_LIMIT` (own project so other tests do not share the counter)
 - `openrouter` — real OpenRouter adapter, outbound HTTP answered by a fake gateway
 - `workers-ai` — no provider vars (defaults), real Workers AI adapter over a fake `AI` service binding
-- `corpus` — Node; validates every chunk in `corpus/*.json`
+- `corpus` — Node; validates every chunk in `corpus/*.json`, every case in `eval/cases.json` and the eval run loop

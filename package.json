@@ -8,7 +8,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "index:corpus": "tsx --env-file-if-exists=.env scripts/index-corpus.ts",
-    "index:check": "tsx --env-file-if-exists=.env scripts/index-corpus.ts --dry-run"
+    "index:check": "tsx --env-file-if-exists=.env scripts/index-corpus.ts --dry-run",
+    "eval:run": "tsx --env-file-if-exists=.env scripts/run-eval.ts",
+    "eval:check": "tsx scripts/run-eval.ts --check",
+    "eval:judge": "tsx --env-file-if-exists=.env scripts/judge-eval.ts"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "0.23.0",

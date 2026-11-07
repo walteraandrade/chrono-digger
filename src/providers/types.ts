@@ -6,7 +6,7 @@ export type ChatRole = "system" | "user" | "assistant";
 
 export type ChatMessage = { role: ChatRole; content: string };
 
-export type ChatOptions = { maxTokens?: number };
+export type ChatOptions = { maxTokens?: number; temperature?: number };
 
 export class ProviderError extends Data.TaggedError("ProviderError")<{
   readonly message: string;
@@ -40,6 +40,8 @@ export type Chunk = {
   language: string;
   passage: string;
 };
+
+export type Source = Omit<Chunk, "characterId">;
 
 export type ScoredChunk = Chunk & { score: number };
 
