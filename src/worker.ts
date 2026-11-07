@@ -1,6 +1,7 @@
 import { hasAccess, isValidPlayerId } from "./access";
 import { characters, findCharacter, toPublicCharacter } from "./characters";
 import { CLOSE_CODES, type ErrorType, errorMessage } from "./contract";
+import { sandwichCase } from "./diary/cases";
 import type { Env } from "./env";
 import { CHARACTER_HEADER, PLAYER_HEADER } from "./session";
 
@@ -23,7 +24,7 @@ const rejectSocket = (error: ErrorType) => {
 
 const listCharacters = async (request: Request, env: Env) =>
   (await hasAccess(request, env, request.headers.get(ACCESS_CODE_HEADER)))
-    ? json({ characters: characters.map(toPublicCharacter) })
+    ? json({ caseQuestion: sandwichCase.question, characters: characters.map(toPublicCharacter) })
     : httpError("bad_access_code", 401);
 
 const openSession = async (request: Request, env: Env, characterId: string) => {

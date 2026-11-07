@@ -1,3 +1,4 @@
+import type { PlayerDiary } from "./diary/player-diary";
 import type { GlobalQuota, PlayerQuota } from "./quota";
 
 export interface Env {
@@ -23,5 +24,6 @@ export interface Env {
   CHARACTER_SESSION: DurableObjectNamespace;
   PLAYER_QUOTA: DurableObjectNamespace<PlayerQuota>;
   GLOBAL_QUOTA: DurableObjectNamespace<GlobalQuota>;
+  PLAYER_DIARY: DurableObjectNamespace<PlayerDiary>;
   ASSETS?: Fetcher;
 }

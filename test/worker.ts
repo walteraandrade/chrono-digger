@@ -15,6 +15,7 @@ const testRegistry: ProviderRegistry = {
   index: { ...defaultRegistry.index, memory: () => memoryIndex },
 };
 
+export { PlayerDiary } from "../src/diary/player-diary";
 export { GlobalQuota, PlayerQuota } from "../src/quota";
 
 export const CharacterSession = createCharacterSession(testRegistry);

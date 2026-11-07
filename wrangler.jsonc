@@ -14,12 +14,14 @@
     "bindings": [
       { "name": "CHARACTER_SESSION", "class_name": "CharacterSession" },
       { "name": "PLAYER_QUOTA", "class_name": "PlayerQuota" },
-      { "name": "GLOBAL_QUOTA", "class_name": "GlobalQuota" }
+      { "name": "GLOBAL_QUOTA", "class_name": "GlobalQuota" },
+      { "name": "PLAYER_DIARY", "class_name": "PlayerDiary" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["CharacterSession", "PlayerQuota"] },
-    { "tag": "v2", "new_sqlite_classes": ["GlobalQuota"] }
+    { "tag": "v2", "new_sqlite_classes": ["GlobalQuota"] },
+    { "tag": "v3", "new_sqlite_classes": ["PlayerDiary"] }
   ],
   "vars": {
     "DAILY_LIMIT": "10",

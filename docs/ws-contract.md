@@ -10,7 +10,7 @@ Header: `x-access-code: <shared access code>`
 
 - `200`:
   ```json
-  { "characters": [{ "id": "princip", "displayName": "Gavrilo Princip", "description": "..." }] }
+  { "caseQuestion": "Princip estava comendo um sanduíche?", "characters": [{ "id": "princip", "displayName": "Gavrilo Princip", "description": "..." }] }
   ```
   Array order carries no meaning. Clients must ignore unknown fields.
 - `401`: `{ "type": "error", "error": "bad_access_code", "message": "..." }`
@@ -47,6 +47,30 @@ The server first sends the stored history (empty for a new conversation):
 ] }
 ```
 
+Then the player's diary, shared across all characters of that `playerId`:
+
+```json
+{
+  "type": "diary",
+  "caseQuestion": "Princip estava comendo um sanduíche?",
+  "lines": [
+    { "id": "princip-shop", "owner": "princip", "text": "Estava diante de uma ____", "blank": { "filled": true, "word": "loja" }, "secret": false },
+    { "id": "albertini-none", "owner": "albertini", "text": "...", "secret": false }
+  ],
+  "filled": 2,
+  "total": 6,
+  "secretsOpen": 0,
+  "suggestions": [{ "characterId": "princip", "text": "Onde você estava quando o carro parou?" }]
+}
+```
+
+- Closed lines are not sent. `total` counts every common line plus the secrets already open, so a closed secret stays invisible.
+- `owner` is a character id or `case`. A line without `blank` is done as soon as it opens.
+- `word` appears only after a right answer. It is the line's own word, so the sentence stays grammatical: a player who types the synonym "armazém" sees "loja".
+- `closing` (`text`, `references`) appears only when `filled` equals `total`.
+- `suggestions` is static. Show a suggestion on its character's chat and hide it once its `text` is in that conversation's history; failed turns are not stored, so a failed suggestion stays. Clicking sends a normal `ask`.
+- If the diary cannot be read, this message is skipped and the chat keeps working.
+
 ### Client → server
 
 ```json
@@ -55,13 +79,29 @@ The server first sends the stored history (empty for a new conversation):
 
 `text` is trimmed and must be 1–1000 characters. Send one `ask` at a time; wait for `end` or `error` before the next.
 
+```json
+{ "type": "fill", "lineId": "princip-shop", "word": "armazém" }
+```
+
+`word` is trimmed and must be 1–64 characters. A `fill` spends no daily limit, can be retried freely and may be sent while an answer streams, so its replies can arrive between `chunk` messages.
+
+### Server → client, per `fill`
+
+1. One `{ "type": "fillResult", "lineId": "...", "correct": true }`.
+2. One `diary` message, only if a blank was newly filled.
+
+A `fill` for a closed, unknown or blank-less line gets `bad_request`, as does a malformed message. A later wrong word never erases a filled blank.
+
 ### Server → client, per `ask`
 
 A successful turn is, in order:
 
 1. zero or more `{ "type": "chunk", "text": "..." }` — answer text, to be concatenated;
 2. exactly one `{ "type": "sources", "sources": [Source, ...] }` — the passages retrieved for this answer. Matches scoring below `MIN_SOURCE_SCORE` are dropped, so the list may be empty when nothing in the character's sources covers the question; the character is then told to say it does not know, and the UI shows a "no passage" note;
-3. exactly one `{ "type": "end" }`.
+3. one `diary` message, only if the turn opened a line;
+4. exactly one `{ "type": "end" }`.
+
+A diary failure after a good answer is logged and does not fail the turn: the answer stands and the `diary` message is skipped.
 
 A failed turn ends with one `error` message instead of `sources` + `end`. Chunks may already have been sent before a `provider_failure`; the client must discard the partial text and mark the question as failed. Failed turns are not stored in the history and do not count against either daily limit (the quota is refunded). The socket stays open after a turn error.
 
@@ -78,6 +118,7 @@ Messages belong to the socket that carried the `ask`. A client that reconnects o
 | `provider_failure` | embedding, retrieval or chat provider failed, the stream stalled for 30 s, or the whole turn exceeded `TURN_TIMEOUT_MS` (default 45 s) | "A resposta falhou. Tente de novo." |
 | `bad_request` | malformed message or text out of bounds | "Não entendi a pergunta." |
 | `busy` | an answer is still streaming on this conversation | "Espere a resposta anterior terminar." |
+| `diary_failure` | a `fill` could not be checked | "Não deu para conferir a palavra. Tente de novo." |
 
 `message` is an English diagnostic; clients map `error` to their own copy.
 

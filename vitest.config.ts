@@ -20,6 +20,7 @@ const durableObjects = {
   CHARACTER_SESSION: { className: "CharacterSession", useSQLite: true },
   PLAYER_QUOTA: { className: "PlayerQuota", useSQLite: true },
   GLOBAL_QUOTA: { className: "GlobalQuota", useSQLite: true },
+  PLAYER_DIARY: { className: "PlayerDiary", useSQLite: true },
 };
 
 const FAKE_PROVIDERS = { CHAT_PROVIDER: "fake", EMBEDDING_PROVIDER: "fake", RETRIEVAL_INDEX: "memory" };
@@ -50,6 +51,7 @@ export default defineConfig({
   test: {
     projects: [
       { test: { name: "corpus", include: ["scripts/**/*.test.ts"], environment: "node" } },
+      { test: { name: "diary", include: ["test/diary/**/*.test.ts"], environment: "node" } },
       project("seam", FAKE_PROVIDERS),
       project("global-quota", { ...FAKE_PROVIDERS, GLOBAL_DAILY_LIMIT: String(TEST_GLOBAL_DAILY_LIMIT) }),
       project("dev-access", { ...FAKE_PROVIDERS, ACCESS_CODE_DISABLED: "true" }),
