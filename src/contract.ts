@@ -1,4 +1,4 @@
-import type { Source } from "./turn";
+import type { Source } from "./providers/types";
 
 export const PROTOCOL_VERSION = 1;
 

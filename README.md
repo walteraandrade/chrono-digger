@@ -13,6 +13,7 @@ History Sim v1: a pt-br single page where students question source-grounded AI c
 - `src/providers/` — `ChatProvider` / `EmbeddingProvider` / `RetrievalIndex` (return `Effect`/`Stream`, fail with `ProviderError`), adapters `workers-ai`, `openrouter`, `vectorize`. Import Effect by module (`effect/Effect`), not from the `effect` barrel: the barrel doubles test time
 - `public/` — static frontend served through Workers Assets
 - `scripts/index-corpus.ts` — embeds `corpus/*.json` and upserts into Vectorize
+- `eval/cases.json`, `scripts/run-eval.ts` — fidelity eval cases and on-demand runner
 - `test/` — tests through the Worker entry only; fakes injected via env at the provider boundary
 
 ## Setup
@@ -62,7 +63,11 @@ pnpm typecheck    # tsc for worker/tests and for node scripts
 pnpm test         # vitest + @cloudflare/vitest-pool-workers
 pnpm index:check  # validate corpus/*.json, upload nothing
 pnpm index:corpus # embed and upsert corpus/*.json into Vectorize
+pnpm eval:check   # validate eval/cases.json, spend nothing
+pnpm eval:run --provider workers-ai # ask every eval case through a local wrangler dev; spends real quota
 ```
+
+See `docs/fidelity-eval.md` ("Como rodar") for eval options and quota.
 
 `index:corpus` loads `.env` if present and reads `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Workers AI + Vectorize edit), `AI_GATEWAY_ID`, `AI_GATEWAY_TOKEN` (authenticated gateway only), `VECTORIZE_INDEX` (default `chrono-digger-corpus`), `EMBEDDING_PROVIDER` and, for OpenRouter, `OPENROUTER_API_KEY`. Upserts are idempotent by chunk id, so rerunning reindexes.
 
@@ -74,4 +79,4 @@ Projects in `vitest.config.ts`:
 - `global-quota` — same fakes, with a tiny `GLOBAL_DAILY_LIMIT` (own project so other tests do not share the counter)
 - `openrouter` — real OpenRouter adapter, outbound HTTP answered by a fake gateway
 - `workers-ai` — no provider vars (defaults), real Workers AI adapter over a fake `AI` service binding
-- `corpus` — Node; validates every chunk in `corpus/*.json`
+- `corpus` — Node; validates every chunk in `corpus/*.json`, every case in `eval/cases.json` and the eval run loop

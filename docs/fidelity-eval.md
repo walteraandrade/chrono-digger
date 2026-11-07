@@ -43,6 +43,29 @@ LLM com rubrica. Rodar via `ChatProvider` para poder trocar o modelo.
 - **Por caso:** recebe pergunta, resposta e `expected`. Devolve `pass` / `fail` + justificativa curta.
 - **Por fio (checagem de dedução):** recebe só as respostas dadas aos casos do fio, sem `expected` nem fontes, e a pergunta do fio. Escreve uma conclusão. Um segundo passo compara com a conclusão esperada do fio: `pass` / `fail` + justificativa. Falha aqui quer dizer que as peças não bastam, mesmo que cada uma seja fiel.
 
+## Como rodar
+
+Os casos e fios vivem em [`eval/cases.json`](../eval/cases.json). As tabelas abaixo são a versão legível; um teste falha se as duas divergirem.
+
+```sh
+pnpm eval:check                                    # valida os casos, sem gastar cota
+pnpm eval:run --provider workers-ai                # roda todos os casos
+pnpm eval:run --provider workers-ai --case princip-08  # roda só um caso
+pnpm eval:run --provider openrouter --run <id>     # continua uma rodada
+```
+
+- O runner sobe um `wrangler dev` próprio e faz as perguntas pelo mesmo WebSocket da página. `--provider` vira `CHAT_PROVIDER` nesse servidor. O embedding não muda, porque trocá-lo exige reindexar.
+- Precisa de login na Cloudflare e do corpus indexado. Para `openrouter`, ponha `OPENROUTER_API_KEY` e `CLOUDFLARE_ACCOUNT_ID` (e `AI_GATEWAY_TOKEN`, se o gateway for autenticado) no `.dev.vars`.
+- As respostas vão para `eval/results/<id>.json`, salvas a cada caso. Rodar de novo com `--run <id>` pula o que já foi respondido e tenta de novo o que falhou.
+- Fora do CI: gasta cota real e o resultado varia.
+
+### Cota
+
+- **Limite por pessoa:** cada caso usa um `playerId` novo. Assim uma resposta não contamina a próxima, e o limite de 10 por dia não se aplica.
+- **Limite global:** o servidor do eval tem contadores próprios (`.wrangler/eval`), e o runner sobe o limite dele para 1000. O contador da turma não é tocado.
+- **Neurons:** esse é o limite real. Os ~70 por dia do Workers AI são da conta inteira, e uma rodada completa gasta 35 respostas, sem contar o juiz. Não rode durante uma aula. O OpenRouter não gasta essa cota de chat, mas é pago.
+- **Parada:** o runner para sozinho depois de 3 falhas seguidas, que é o que acontece quando os neurons acabam. Continue no dia seguinte com `--run <id>`.
+
 ## Instante do congelamento
 
 Dentro do carro, logo depois de Franz Ferdinand dizer "Es ist nichts!" e desmaiar, antes de chegar ao Konak. Na rua, Princip já atirou e está sendo agarrado. Ninguém da cena sabe das mortes (confirmadas no Konak), do processo nem da guerra.

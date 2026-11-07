@@ -41,6 +41,8 @@ export type Chunk = {
   passage: string;
 };
 
+export type Source = Omit<Chunk, "characterId">;
+
 export type ScoredChunk = Chunk & { score: number };
 
 export type SearchOptions = { characterId: string; topK: number };
